@@ -1,0 +1,3 @@
+packages:
+  - "apps/*"      # All applications (Next.js app, Express server, etc.)
+  - "packages/*"  # Shared packages (utilities, types, configurations)
