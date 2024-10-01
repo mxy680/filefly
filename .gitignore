@@ -1,9 +1,0 @@
-node_modules
-.turbo
-dist
-.next
-.env
-.env.local
-.DS_Store
-yarn.lock
-__tests__
