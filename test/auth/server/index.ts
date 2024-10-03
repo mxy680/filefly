@@ -1,10 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-const { cookieParser } = require('cookie-parser');
+import cookieParser from 'cookie-parser';
 
-import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
-import webhookRoutes from './routes/webhookRoutes';
+import authRoutes from './routes/authRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -15,9 +14,8 @@ app.use(express.json()); // Parse incoming JSON requests
 app.use(cookieParser());
 
 // Routes
-//app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-// app.use('/api/webhooks', webhookRoutes);
+app.use('/api/auth', authRoutes);
 
 // Start the server
 app.listen(PORT, () => {

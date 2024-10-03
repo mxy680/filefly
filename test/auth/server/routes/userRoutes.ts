@@ -1,17 +1,11 @@
 import express from 'express';
-import { 
-    getAllUsers,
-    createUser,
+import {
+    deleteAllUsers,
 } from '../controllers/userController';
-
-import verifyJWT from '../middleware/verifyJWT';
 
 const router = express.Router();
 
-// GET /api/users - Get all users
-router.get('/', verifyJWT, getAllUsers);
-
-// POST /api/users - Create a new user
-router.post('/', createUser);
+// DELETE /api/users
+router.delete('/', deleteAllUsers);
 
 export default router;

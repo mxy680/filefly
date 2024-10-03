@@ -9,9 +9,9 @@ datasource db {
 
 model User {
   id                  Int                  @id @default(autoincrement())
-  username            String               @unique
-  accessTokens        AccessToken[]
-  refreshTokens       RefreshToken[]
+  username            String
+  usernameID          String               @unique
+  tokens              Token[]
   googleDriveWebhooks GoogleDriveWebhook[]
   sessions            Session[]
   createdAt           DateTime             @default(now())
@@ -25,7 +25,7 @@ model Session {
   jwtRefreshToken String   @unique
   expiresAt       DateTime
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -36,12 +36,11 @@ model Provider {
   id                  Int                  @id @default(autoincrement())
   name                ProviderType
   userId              Int
-  accessTokens        AccessToken[]
-  refreshTokens       RefreshToken[]
+  tokens              Token[]
   googleDriveWebhooks GoogleDriveWebhook[]
   user                User                 @relation(fields: [userId], references: [id])
   createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  updatedAt           DateTime             @default(now())
 }
 
 // -------------------------------------------- Enums --------------------------------------------
@@ -52,30 +51,26 @@ enum ProviderType {
   DROPBOX
 }
 
-// -------------------------------------------- Tokens --------------------------------------------
-
-model AccessToken {
-  id              Int      @id @default(autoincrement())
-  tokenEncrypted  String   @unique
-  tokenInitVector String   @unique
-  provider        Provider @relation(fields: [providerId], references: [id])
-  providerId      Int
-  user            User     @relation(fields: [userId], references: [id])
-  userId          Int
-  expiresAt       DateTime
-  createdAt       DateTime @default(now())
+enum TokenType {
+  ACCESS
+  REFRESH
 }
 
-model RefreshToken {
-  id              Int      @id @default(autoincrement())
-  tokenEncrypted  String   @unique
-  tokenInitVector String   @unique
-  provider        Provider @relation(fields: [providerId], references: [id])
-  providerId      Int
-  user            User     @relation(fields: [userId], references: [id])
-  userId          Int
-  expiresAt       DateTime
-  createdAt       DateTime @default(now())
+// -------------------------------------------- Tokens --------------------------------------------
+
+model Token {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique
+  tokenType  TokenType
+  provider   Provider  @relation(fields: [providerId], references: [id])
+  providerId Int
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId, tokenType, expiresAt])
 }
 
 // -------------------------------------------- Webhooks --------------------------------------------

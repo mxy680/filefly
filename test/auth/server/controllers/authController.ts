@@ -1,79 +1,82 @@
-import { Request, Response, NextFunction } from 'express';
-import prismaClient from '../prisma/client';
-const { google } = require('googleapis');
-import { encryptToken, decryptToken } from '../utils/encryption';
+import e, { Request, Response, NextFunction } from 'express';
+import prisma from '../prisma/client';
+import jwt from 'jsonwebtoken';
+const { randomBytes } = require('crypto');
 
-require('dotenv').config()
+// Define JWT secret and expiration time
+const JWT_ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET as string;
+const JWT_REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET as string;
+const JWT_ACCESS_TOKEN_EXPIRATION = '1h';
+const JWT_REFRESH_TOKEN_EXPIRATION = '7d';
 
-// Initiate Google OAuth flow
-export const connectToGoogleDrive = (req: Request, res: Response) => {
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.SERVER_URL}/api/auth/google-drive/callback`
-  );
+// --------------- POST ---------------
 
-  const scopes = ['https://www.googleapis.com/auth/drive'];
+// Controller function to create a new user and generate a JWT token for them
+export const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { username } = req.body;
 
-  const url = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: scopes,
-    prompt: 'consent', // Always ask the user for permission to refresh the token
-  });
+        if (!username) {
+            res.status(400).json({ error: 'Username is required' });
+            return;
+        }
 
-  res.redirect(url); // Redirect the user to Google for consent
-};
+        let usernameID = username + randomBytes(8).toString('hex');
+        let existingUser = true;
 
-// Handle OAuth callback and obtain access & refresh tokens
-export const googleOAuthCallback = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { code } = req.query;
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.SERVER_URL}/api/auth/google-drive/callback`
-  );
+        while (existingUser) {
+            // Check if a user with the same username already exists
+            existingUser = await prisma.user.findUnique({
+                where: { usernameID },
+            }) ? true : false;
+        }
 
-  try {
-    const { tokens } = await oauth2Client.getToken(code as string);
+        // Create a new user in the database
+        const newUser = await prisma.user.create({
+            data: { username, usernameID },
+        });
 
-    if (!tokens.access_token || !tokens.refresh_token) {
-      res.status(400).json({ error: 'Missing access or refresh token' });
-      return;
+        // Generate a JWT access token for the new user
+        const accessToken = jwt.sign(
+            { id: newUser.id, username: newUser.username }, // Payload
+            JWT_ACCESS_TOKEN_SECRET, // Secret key
+            { expiresIn: JWT_ACCESS_TOKEN_EXPIRATION } // Token expiration time
+        );
+
+        // Generate a JWT refresh token for the new user
+        const refreshToken = jwt.sign(
+            { id: newUser.id, username: newUser.username }, // Payload
+            JWT_REFRESH_TOKEN_SECRET, // Secret key
+            { expiresIn: JWT_REFRESH_TOKEN_EXPIRATION } // Token expiration time
+        );
+
+        // Store the refresh token in the Session table
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await prisma.session.create({
+            data: {
+                userId: newUser.id,
+                jwtRefreshToken: refreshToken as string,
+                expiresAt: expiresAt,
+            },
+        });
+
+        // Save as cookie
+        res.cookie('jwt', refreshToken, {
+            httpOnly: true,
+            secure: true,
+            maxAge: expiresAt.getTime(),
+        });
+
+        // Respond with the newly created user and the JWT token
+        res.status(201).json({
+            id: newUser.id,
+            username: newUser.username,
+            usernameID: newUser.usernameID,
+            accessToken, // Include the token in the response
+        });
+
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ error: 'Failed to create user' });
     }
-
-    if (!tokens.expiry_date) {
-      res.status(400).json({ error: 'Missing expiry date' });
-      return;
-    }
-
-    // Encrypt tokens before saving
-    const { encryptedToken: encryptedAccessToken, initVector: accessInitVector } = encryptToken(tokens.access_token);
-    const { encryptedToken: encryptedRefreshToken, initVector: refreshInitVector } = encryptToken(tokens.refresh_token);
-
-    // Saving Access Token to database
-    await prismaClient.accessToken.create({
-      data: {
-        userId: req.user.id, // Assuming `req.user` is populated by auth middleware
-        providerId: 1, // Assuming 1 is the Google Drive provider ID
-        tokenEncrypted: encryptedAccessToken,
-        tokenInitVector: accessInitVector,
-        expiresAt: new Date(tokens.expiry_date),
-      },
-    });
-
-    // Save refresh token to database
-    await prismaClient.refreshToken.create({
-      data: {
-        userId: req.user.id,
-        providerId: 1,
-        tokenEncrypted: encryptedRefreshToken,
-        tokenInitVector: refreshInitVector,
-        expiresAt: new Date(tokens.expiry_date),
-      },
-    });
-
-    res.status(200).json({ message: 'Google Drive connected successfully', tokens });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to connect to Google Drive', details: err });
-  }
-};
+}
