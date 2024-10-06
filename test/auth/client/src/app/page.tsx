@@ -1,19 +1,21 @@
 "use client";
+import axios from 'axios';
 
 export default function Home() {
-
   const handleGoogleAuth = async () => {
-    const response = await fetch("http://localhost:4000/auth/google", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // Include cookies in the request
-      mode: "cors", // Ensure CORS mode is set
-    });
+    try {
+      const response = await axios.get("/auth/google", {
+        withCredentials: true, // Include cookies in the request
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    const data = await response.json();
-    console.log(data);
+      // Perform the redirect to Google's OAuth page using the URL provided by the backend
+      window.location.href = response.data.redirectUrl;
+    } catch (error) {
+      console.error("Error during Google authentication", error);
+    }
   }
 
   return (

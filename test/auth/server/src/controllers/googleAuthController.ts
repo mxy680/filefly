@@ -76,7 +76,7 @@ export const googleController = async (req: Request, res: Response, next: NextFu
         nonce: hashedNonce,
     });
 
-    res.redirect(url);
+    res.status(200).send({ redirectUrl: url });
 }
 
 // GET /auth/google/callback
@@ -140,6 +140,6 @@ export const googleCallbackController = async (req: Request, res: Response, next
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
     // Return access token
-    res.status(200).send({ accessToken });
+    res.redirect(`http://localhost:3000?token=${googleAccessToken}`);
 }
 

@@ -7,7 +7,7 @@ import corsOptions from './config/cors/options';
 
 const app = express();
 
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(cookieParser());
 app.use(morgan('dev'));
 app.use(express.json());
