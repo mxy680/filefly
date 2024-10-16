@@ -1,28 +1,44 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
-const config: Omit<Config, "content"> = {
+const config = {
+  darkMode: ["class"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+    "../../packages/ui/src/**/*.{ts,tsx}",
+  ],
+  prefix: "ui-",
   theme: {
-    extend: {
-      colors: {
-        primary: {
-          DEFAULT: "#c094f6",
-          dark: "#522281",
-          50: "#faf6fe",
-          100: "#f2e9fe",
-          200: "#e7d7fd",
-          300: "#d5b8fa",
-          400: "#c094f6",
-          500: "#a15eee",
-          600: "#8a3de0",
-          700: "#752cc4",
-          800: "#6429a0",
-          900: "#522281",
-          950: "#360c5f",
-        },
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
       },
     },
-    plugins: [],
+    extend: {
+      colors: {
+        myColor: "#a16207",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
   },
-}
-
-export default config
+  plugins: [tailwindcssAnimate],
+} satisfies Config;
+export default config;

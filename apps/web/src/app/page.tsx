@@ -1,9 +1,9 @@
-import Image from "next/image";
+import { Button } from "@repo/ui/components/ui/button";
 
 export default function Home() {
   return (
     <div>
-      Home
+      <Button variant="destructive">Click Me</Button>
     </div>
   );
 }
