@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { GoogleService } from 'src/providers/google.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private usersService: UsersService) { }
+    constructor(private googleService: GoogleService) { }
 
     async signIn(provider: string) {
-        return { provider: 'provider' };
+        return this.googleService.signIn();
     }
 }

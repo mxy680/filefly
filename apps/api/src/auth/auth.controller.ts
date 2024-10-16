@@ -7,7 +7,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   
   @HttpCode(HttpStatus.OK)
-  @Get('login/:provider')
+  @Get('/:provider')
   signIn(@Param('provider') provider: string) {
     return this.authService.signIn(provider);
   }
