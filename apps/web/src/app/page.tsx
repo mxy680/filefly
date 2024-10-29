@@ -5,6 +5,8 @@ import { Button } from "@repo/ui/components/ui/button";
 export default function Home() {
   const handleLogin = async () => {
     const response = await fetch("/api/auth/login");
+    const data = await response.json();
+    console.log(data);
   };
 
   return (
