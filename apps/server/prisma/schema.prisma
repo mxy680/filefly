@@ -33,8 +33,8 @@ model Session {
   id           Int      @id @default(autoincrement())
   createdAt    DateTime @default(now())
   expiresAt    DateTime
-  accessToken  String   @unique // Unique session token
-  refreshToken String   @unique // unique refresh token for session renewal
+  accessToken  String?  @unique // Unique session token
+  refreshToken String?  @unique // unique refresh token for session renewal
   userId       Int
   user         User     @relation(fields: [userId], references: [id])
 }

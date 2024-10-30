@@ -1,5 +1,5 @@
-import { Controller, Get, UseGuards, Req, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, Post, HttpCode, UseGuards, Req, Res } from '@nestjs/common';
+import { Response, Request } from 'express';
 import { GoogleGuard } from './guards/google.guard';
 import { UsersService } from 'src/users/users.service';
 import { ProvidersService } from 'src/providers/providers.service';
@@ -13,9 +13,27 @@ export class AuthController {
     private authService: AuthService
   ) { }
 
+  @Post('logout')
+  @HttpCode(200) // Set HTTP status to 200 OK
+  async logout(@Req() req: Request, @Res() res: Response) {
+    // Get the session ID from the cookies
+    const accessToken = req.cookies.accessToken;   
+    const { userId, sessionId } = await this.authService.decodeToken(accessToken);
+
+    // Delete the session
+    await this.authService.deleteSession(Number(sessionId));
+
+    // Clear the session and refresh cookies by setting them to expire in the past
+    res.clearCookie('accessToken', { path: '/' });
+    res.clearCookie('refreshToken', { path: '/' });
+
+    // Send a success message
+    return res.json({ message: 'Logged out successfully' });
+  }
+
   @Get('google/login')
   @UseGuards(GoogleGuard)
-  async googleLogin() { /* This route will redirect to Google for authentication */ }
+  async googleLogin() { }
 
   @Get('google/login/callback')
   @UseGuards(GoogleGuard)
@@ -51,12 +69,14 @@ export class AuthController {
       throw new Error('User ID is not a number');
     }
 
+    const sessionId: number = await this.authService.initializeSession(userId);
+
     // Create tokens
-    const accessToken = await this.authService.generateAccessToken(userId);
-    const refreshToken = await this.authService.generateRefreshToken(userId);
+    const accessToken = await this.authService.generateAccessToken(userId, sessionId);
+    const refreshToken = await this.authService.generateRefreshToken(userId, sessionId);
 
     // Create session for user
-    await this.authService.createSession(accessToken, refreshToken, userId);
+    await this.authService.updateSession(accessToken, refreshToken, sessionId);
 
     // Set cookies
     res.cookie('accessToken', accessToken, {
@@ -77,3 +97,7 @@ export class AuthController {
     res.redirect(`${process.env.CLIENT_URL}`);
   }
 }
+function uuidv4() {
+  throw new Error('Function not implemented.');
+}
+
