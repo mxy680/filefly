@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  providers Provider[]
+  sessions  Session[]
+}
+
+model Provider {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  provider     String // e.g., 'google', 'facebook'
+  providerId   String // Unique ID from the provider (e.g., Google user ID)
+  accessToken  String
+  refreshToken String
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerId]) // Unique combination of provider and providerId
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+  accessToken  String   @unique // Unique session token
+  refreshToken String   @unique // unique refresh token for session renewal
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+}
