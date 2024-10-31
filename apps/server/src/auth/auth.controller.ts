@@ -1,9 +1,16 @@
-import { Controller, Get, Post, HttpCode, UseGuards, Req, Res } from '@nestjs/common';
+import { Controller, Get, Post, HttpCode, UseGuards, Req, Res, UnauthorizedException } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { GoogleGuard } from './guards/google.guard';
 import { UsersService } from 'src/users/users.service';
 import { ProvidersService } from 'src/providers/providers.service';
 import { AuthService } from './auth.service';
+import { AuthGuard } from './guards/auth.guard';
+
+interface User {
+  sessionId?: number;
+  userId?: number;
+  accessToken?: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -13,15 +20,56 @@ export class AuthController {
     private authService: AuthService
   ) { }
 
+  @Post('refresh')
+  @HttpCode(200)
+  async refreshAccessToken(@Req() req: Request, @Res() res: Response) {
+    const refreshToken = req.cookies['refreshToken'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token provided');
+    }
+
+    try {
+      // Validate and decode the refresh token
+      const { userId, sessionId } = await this.authService.decodeToken(refreshToken);
+
+      // Generate a new access token
+      const newAccessToken = await this.authService.generateAccessToken(userId, sessionId);
+
+      // Generate new refresh token
+      const newRefreshToken = await this.authService.generateRefreshToken(userId, sessionId);
+
+      // Set the new access token in the cookies
+      res.cookie('accessToken', newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 1000, // 1 hour
+        sameSite: 'lax',
+      });
+
+      // Set the new refresh token in the cookies
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: 'lax',
+      });
+
+      return res.json({ message: 'Tokens refreshed' });
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
   @Post('logout')
   @HttpCode(200) // Set HTTP status to 200 OK
+  @UseGuards(AuthGuard)
   async logout(@Req() req: Request, @Res() res: Response) {
-    // Get the session ID from the cookies
-    const accessToken = req.cookies.accessToken;   
-    const { userId, sessionId } = await this.authService.decodeToken(accessToken);
+    // Get the session ID from the request middleware extraction
+    const sessionId = (req.user as User).sessionId;
 
     // Delete the session
-    await this.authService.deleteSession(Number(sessionId));
+    await this.authService.deleteSession(sessionId);
 
     // Clear the session and refresh cookies by setting them to expire in the past
     res.clearCookie('accessToken', { path: '/' });

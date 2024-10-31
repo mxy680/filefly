@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/database/prisma.service';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
     }
 
     // Method to decode the token and retrieve sessionId
-    async decodeToken(token: string): Promise<{ userId: number; sessionId: string }> {
+    async decodeToken(token: string): Promise<{ userId: number; sessionId: number }> {
         return this.jwtService.verify(token, { secret: process.env.ACCESS_TOKEN_SECRET });
     }
 
@@ -49,5 +50,32 @@ export class AuthService {
         return await this.prismaService.session.delete({
             where: { id: sessionId }
         });
+    }
+
+    async sessionExists(sessionId: number): Promise<boolean> {
+        const session = await this.prismaService.session.findUnique({
+            where: { id: sessionId }
+        });
+        return session ? true : false;
+    }
+
+    async isSessionActive(sessionId: number): Promise<boolean> {
+        const session = await this.prismaService.session.findUnique({
+            where: { id: sessionId }
+        });
+        return session.expiresAt > new Date();
+    }
+
+    async isTokenExpired(token: string): Promise<boolean> {
+        try {
+            // Decode and verify the token with the secret
+            await this.decodeToken(token);
+            return false; // Token is valid and not expired
+        } catch (error) {
+            if (error instanceof jwt.TokenExpiredError) {
+                return true; // Token is expired
+            }
+            throw new UnauthorizedException('Invalid token'); // Other errors (e.g., malformed token)
+        }
     }
 }

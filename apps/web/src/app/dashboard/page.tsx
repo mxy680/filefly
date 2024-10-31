@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@repo/ui/components/ui/button";
+import fetchServer from "../../utils/serverFetch";
 
 const CookiesComponent = () => {
   const [cookies, setCookies] = useState(null);
@@ -19,20 +21,24 @@ const CookiesComponent = () => {
     }
   };
 
+  useEffect(() => {
+    handleFetchCookies();
+  }, []);
+
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:4000/auth/logout", {
+      const response = await fetchServer("http://localhost:4000/auth/logout", {
         method: "POST",
-        credentials: "include", // Include cookies in the request
       });
 
       if (response.ok) {
         // Redirect or reload after logout
+        setCookies(null);
         router.push("/");
       } else {
-        console.error("Failed to log out");
+        console.error("Failed to logout");
       }
     } catch (error) {
       console.error("Error logging out:", error);
@@ -41,14 +47,13 @@ const CookiesComponent = () => {
 
   return (
     <div>
-      <button onClick={handleFetchCookies}>Fetch Cookies</button>
       {cookies && (
         <div>
           <h3>Cookies:</h3>
           <pre>{JSON.stringify(cookies, null, 2)}</pre>
         </div>
       )}
-      <button onClick={handleLogout}>Logout</button>
+      <Button onClick={handleLogout}>Logout</Button>
     </div>
   );
 };
