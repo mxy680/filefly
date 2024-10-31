@@ -20,6 +20,12 @@ export class AuthController {
     private authService: AuthService
   ) { }
 
+  @Get('protected')
+  @UseGuards(AuthGuard)
+  async protectedRoute() {
+    return { message: 'This is a protected route' };
+  }
+
   @Post('refresh')
   @HttpCode(200)
   async refreshAccessToken(@Req() req: Request, @Res() res: Response) {
@@ -43,7 +49,7 @@ export class AuthController {
       res.cookie('accessToken', newAccessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 1000, // 1 hour
+        maxAge: 1000, // 1 hour
         sameSite: 'lax',
       });
 
@@ -130,7 +136,7 @@ export class AuthController {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 1000, // 1h in milliseconds
+      maxAge: 1000, // 1h in milliseconds
       sameSite: 'lax',
     });
 
