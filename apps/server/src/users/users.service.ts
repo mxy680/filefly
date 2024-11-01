@@ -5,11 +5,11 @@ import { PrismaService } from 'src/database/prisma.service';
 export class UsersService {
     constructor(private prisma: PrismaService) { }
 
-    async findUser(providerId: string, provider: string): Promise<number | boolean> {
+    async findUser(providerId: string, provider: string): Promise<number> {
         return await this.prisma.provider.findUnique({
             where: { provider_providerId: { providerId, provider } },
             select: { userId: true }
-        }).then((result) => result?.userId || false);
+        }).then((result) => result?.userId);
     }
 
     async createUser(): Promise<number> {
