@@ -12,8 +12,14 @@ import { TokenService } from './services/token.service';
 import { SessionService } from './services/session.service';
 import { CookieService } from './services/cookie.service';
 import { GoogleController } from './controllers/providers/google.controller';
+import { GithubStrategy } from './strategies/github.strategy';
+import { GithubController } from './controllers/providers/github.controller';
 
-const strategies = [GoogleStrategy];
+const strategies = [
+  GoogleStrategy, 
+  GithubStrategy
+];
+
 const services = [
   PrismaService, 
   AuthService, 
@@ -24,7 +30,11 @@ const services = [
   CookieService
 ];
 
-const controllers = [AuthController, GoogleController];
+const controllers = [
+  AuthController,
+  GoogleController, 
+  GithubController
+];
 
 @Module({
   imports: [

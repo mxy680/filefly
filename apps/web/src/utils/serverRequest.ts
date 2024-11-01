@@ -1,4 +1,3 @@
-// src/utils/serverRequest.ts
 import { AxiosRequestConfig } from 'axios';
 import { NextRequest } from 'next/server';
 import api from './axios';

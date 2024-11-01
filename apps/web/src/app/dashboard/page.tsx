@@ -18,7 +18,7 @@ const Dashboard = () => {
 
   const handleProtectedRoute = async () => {
     try {
-      const res = await api.get("/auth/check");
+      await api.get("/auth/check");
     } catch (error) {
       console.error("Error accessing protected route:", error);
     }

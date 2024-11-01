@@ -48,6 +48,14 @@ export class AuthController {
     }
   }
 
+  @Post('clear-cookies')
+  @HttpCode(200)
+  async clearCookies(@Res() res: Response) {
+    this.cookieService.clearCookie(res, 'accessToken');
+    this.cookieService.clearCookie(res, 'refreshToken');
+    return res.json({ message: 'Cookies cleared' });
+  }
+
   @Post('logout')
   @UseGuards(AuthGuard)
   @HttpCode(200)
