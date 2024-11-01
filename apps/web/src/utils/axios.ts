@@ -1,50 +1,48 @@
 import axios from 'axios';
 
-// Create an Axios instance
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
-    withCredentials: true, // To send cookies
+    withCredentials: true, // To send cookies with requests
 });
 
-// Response interceptor to handle 401 errors
+api.interceptors.request.use(
+    config => {
+        // Check if cookies are provided in config headers
+        if (config.headers && config.headers['x-cookies']) {
+            config.headers['Cookie'] = config.headers['x-cookies'];
+            delete config.headers['x-cookies']; // Clean up the temporary header
+        }
+        return config;
+    },
+    error => Promise.reject(error)
+);
+
 api.interceptors.response.use(
     response => response,
     async error => {
-        if (error.response?.status === 500 || error.response?.status === 502) {
-            window.location.href = '/error';
-            return Promise.reject(error);
-        }
+        const status = error.response?.status;
+        const errorCode = error.response?.data?.code || '';
 
-        if (error.response?.status === 403) {
-            window.location.href = '/forbidden';
-            return Promise.reject(error);
-        }
-
-        if (error.response?.status === 401) {
-            const errorCode = error.response?.data?.code || '';
-
-            if (errorCode === 'TOKEN_EXPIRED' || errorCode === 'NO_ACCESS_TOKEN') {
-                // Refresh Access Token
-                try {
-                    const response = await api.post('/auth/refresh');
-                    if (response.status === 200) {
-                        // Retry the original request with the new token and return the response
-                        return api.request(error.config);
-                    } else {
-                        window.location.href = '/';
-                    }
-                } catch (refreshError) {
-                    window.location.href = '/';
-                    return Promise.reject(refreshError);
+        if (status === 401 && (errorCode === 'TOKEN_EXPIRED' || errorCode === 'NO_ACCESS_TOKEN')) {
+            // Attempt to refresh token
+            try {
+                const response = await api.post('/auth/refresh');
+                if (response.status === 200) {
+                    // Retry the original request with the new token
+                    return api.request(error.config);
+                } else {
+                    return Promise.reject({ ...error, message: 'Failed to refresh token', redirectTo: '/login' });
                 }
-            } else {
-                // Redirect to login page for other 401 errors
-                window.location.href = '/';
-                return Promise.reject(error);
+            } catch (refreshError) {
+                return Promise.reject({ message: 'Failed to refresh token', redirectTo: '/login', ...(typeof refreshError === 'object' ? refreshError : {}) });
             }
+        } else if (status === 403) {
+            return Promise.reject({ ...error, redirectTo: '/forbidden', message: 'User is not authorized' });
+        } else if (status === 500 || status === 502) {
+            return Promise.reject({ ...error, redirectTo: '/error', message: 'Server error' });
         }
 
-        return Promise.reject(error); // Ensure any other error is rejected
+        return Promise.reject(error); // Handle other errors as usual
     }
 );
 

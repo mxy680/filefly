@@ -27,7 +27,6 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @HttpCode(200)
   async refreshAccessToken(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refreshToken'];
 
@@ -68,8 +67,8 @@ export class AuthController {
   }
 
   @Post('logout')
-  @HttpCode(200) // Set HTTP status to 200 OK
   @UseGuards(AuthGuard)
+  @HttpCode(200)
   async logout(@Req() req: Request, @Res() res: Response) {
     // Get the session ID from the request middleware extraction
     const sessionId = (req.user as User).sessionId;

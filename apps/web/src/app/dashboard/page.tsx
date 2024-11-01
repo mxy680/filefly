@@ -4,13 +4,13 @@ import api from "../../utils/axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui/components/ui/button";
 
-const CookiesComponent = () => {
+const Dashboard = () => {
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      await api.post("/auth/logout");
-      router.push("/"); // Redirect to login after logout
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -33,4 +33,4 @@ const CookiesComponent = () => {
   );
 };
 
-export default CookiesComponent;
+export default Dashboard;

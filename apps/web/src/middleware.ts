@@ -18,6 +18,7 @@ export function middleware(req: NextRequest) {
    return NextResponse.next();
 }
 
+// Include all routes
 export const config = {
-   matcher: ['/protected/:path*'], // Paths that require authentication
+   matcher: ['/dashboard'],
 };
