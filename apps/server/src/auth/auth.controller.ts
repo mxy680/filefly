@@ -20,10 +20,10 @@ export class AuthController {
     private authService: AuthService
   ) { }
 
-  @Get('protected')
+  @Get('check')
   @UseGuards(AuthGuard)
-  async protectedRoute() {
-    return { message: 'This is a protected route' };
+  async protectedRoute(@Res() res: Response) {
+    return res.status(200).json({ authenticated: true });
   }
 
   @Post('refresh')
@@ -49,7 +49,7 @@ export class AuthController {
       res.cookie('accessToken', newAccessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 1000, // 1 hour
+        maxAge: 60 * 60 * 1000, // 1 hour
         sameSite: 'lax',
       });
 
@@ -136,7 +136,7 @@ export class AuthController {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 1000, // 1h in milliseconds
+      maxAge: 60 * 60 * 1000, // 1h in milliseconds
       sameSite: 'lax',
     });
 
@@ -150,8 +150,5 @@ export class AuthController {
     // Redirect to frontend
     res.redirect(`${process.env.CLIENT_URL}`);
   }
-}
-function uuidv4() {
-  throw new Error('Function not implemented.');
 }
 
