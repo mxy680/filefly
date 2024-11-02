@@ -3,8 +3,10 @@ import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class GoogleGuard extends AuthGuard('google') {
+export class DropboxGuard extends AuthGuard('dropbox') {
   constructor(private configService: ConfigService) {
-    super();
+    super({
+      token_access_type: 'offline'
+    });
   }
 }

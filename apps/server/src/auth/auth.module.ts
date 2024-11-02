@@ -12,9 +12,12 @@ import { TokenService } from './services/token.service';
 import { SessionService } from './services/session.service';
 import { CookieService } from './services/cookie.service';
 import { GoogleController } from './controllers/providers/google.controller';
+import { DropboxStrategy } from './strategies/dropbox.strategy';
+import { DropboxController } from './controllers/providers/dropbox.controller';
 
 const strategies = [
   GoogleStrategy,
+  DropboxStrategy
 ];
 
 const services = [
@@ -30,6 +33,7 @@ const services = [
 const controllers = [
   AuthController,
   GoogleController,
+  DropboxController
 ];
 
 @Module({

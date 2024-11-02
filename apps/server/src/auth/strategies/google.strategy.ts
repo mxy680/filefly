@@ -13,6 +13,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
+  authorizationParams(): { [key: string]: string; } {
+    return ({
+      access_type: 'offline'
+    });
+  };
+
   async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback) {
     if (!profile) {
       done(new Error('No profile found'));
