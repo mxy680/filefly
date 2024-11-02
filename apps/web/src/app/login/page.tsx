@@ -10,7 +10,6 @@ const LoginPage = () => {
   return (
     <div>
       <Button onClick={() => handleLogin("google")}>Login with Google</Button>
-      <Button onClick={() => handleLogin("github")}>Login with GitHub</Button>
     </div>
   );
 };

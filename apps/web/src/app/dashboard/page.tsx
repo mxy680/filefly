@@ -1,6 +1,5 @@
 "use client";
 
-import api from "../../utils/axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui/components/ui/button";
 
@@ -16,18 +15,9 @@ const Dashboard = () => {
     }
   };
 
-  const handleProtectedRoute = async () => {
-    try {
-      await api.get("/auth/check");
-    } catch (error) {
-      console.error("Error accessing protected route:", error);
-    }
-  };
-
   return (
     <div>
       <Button onClick={handleLogout}>Logout</Button>
-      <Button onClick={handleProtectedRoute}>Protected Route</Button>
     </div>
   );
 };
