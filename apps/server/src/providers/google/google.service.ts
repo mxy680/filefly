@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { google } from 'googleapis';
+import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/database/prisma.service';
@@ -8,11 +8,43 @@ import { PrismaService } from 'src/database/prisma.service';
 export class GoogleService {
     constructor(private readonly prismaService: PrismaService) { }
 
-    async startWatchingChanges(accessToken: string, userId: number) {
-        const auth = new OAuth2Client();
-        auth.setCredentials({ access_token: accessToken });
+    getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
+        const client = new OAuth2Client();
+        client.setCredentials({ access_token: accessToken });
+        const drive = google.drive({ version: 'v3', auth: client });
+        return { drive, client };
+    }
 
-        const drive = google.drive({ version: 'v3', auth });
+    async listFiles(accessToken: string, userId: number): Promise<drive_v3.Schema$File[]> {
+        const { drive } = this.getDrive(accessToken);
+
+        try {
+            const response = await drive.files.list({
+                pageSize: 100, // Adjust as needed
+                fields: 'files(id, name, mimeType)', // Specify fields to retrieve
+            });
+
+            // Create the files in the database (user was just created)
+            await Promise.all(response.data.files.map(async (file: drive_v3.Schema$File) => {
+                await this.prismaService.googleDriveFile.create({
+                    data: {
+                        userId,
+                        id: file.id,
+                        name: file.name,
+                        mimeType: file.mimeType
+                    }
+                });
+            }));
+
+            return response.data.files || [];
+        } catch (error) {
+            console.error('Error retrieving files:', error.message);
+            throw new Error('Failed to retrieve Google Drive files');
+        }
+    }
+
+    async startWatchingChanges(accessToken: string, userId: number) {
+        const { drive } = this.getDrive(accessToken);
 
         try {
             const pageTokenResponse = await drive.changes.getStartPageToken();

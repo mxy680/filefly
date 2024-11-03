@@ -5,7 +5,7 @@ import { TokenService } from './services/token.service';
 import { SessionService } from './services/session.service';
 import { CookieService } from './services/cookie.service';
 import { UsersService } from 'src/users/users.service';
-import { WebhookService } from 'src/webhook/webhook.service';
+import { ProvidersService } from 'src/providers/providers.service';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
         private readonly sessionService: SessionService,
         private readonly cookieService: CookieService,
         private readonly userService: UsersService,
-        private readonly webhookService: WebhookService
+        private readonly providerService: ProvidersService
     ) { }
 
     async onboardUser(
@@ -40,8 +40,12 @@ export class AuthService {
         this.setCookies(res, sessionAccessToken, sessionRefreshToken);
 
         // Setup Webhook
-        await this.webhookService.setupWebhook(provider, providerAccessToken, userId);
+        await this.providerService.setupWebhook(provider, providerAccessToken, userId);
 
+        // Retrieve Files from Provider
+        await this.providerService.retrieveData(provider, providerAccessToken, userId);
+
+        // Send the files back in the response
         return res;
     }
 

@@ -3,17 +3,14 @@ import { ProvidersService } from './providers.service';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleService } from './google/google.service';
 
-const servicesImport = [
-  ProvidersService, 
-  PrismaService,
-];
-
-const servicesExport = [
-  GoogleService,
+const providers = [
+  ProvidersService,
+  GoogleService
 ];
 
 @Module({
-  providers: [...servicesImport, ...servicesExport],
-  exports: [...servicesExport],
+  providers: [...providers, PrismaService],
+  exports: [...providers]
 })
+
 export class ProvidersModule {}

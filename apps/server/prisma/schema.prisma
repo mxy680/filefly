@@ -8,12 +8,15 @@ datasource db {
 }
 
 model User {
-  id                  Int                  @id @default(autoincrement())
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  providers           Provider[]
-  sessions            Session[]
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  providers Provider[]
+  sessions  Session[]
+
+  // Google Drive
   googleDriveWebhooks GoogleDriveWebhook[]
+  googleDriveFiles    GoogleDriveFile[]
 }
 
 model Provider {
@@ -40,6 +43,7 @@ model Session {
   user         User     @relation(fields: [userId], references: [id])
 }
 
+// Google Drive
 model GoogleDriveWebhook {
   id         String   @id @default(cuid())
   userId     Int      @unique
@@ -52,4 +56,20 @@ model GoogleDriveWebhook {
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId, expiration])
+}
+
+model GoogleDriveFile {
+  id           String    @id // Google Drive file ID
+  name         String
+  mimeType     String
+  webViewLink  String? // Optional link to view the file online
+  createdTime  DateTime?
+  modifiedTime DateTime?
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId]) // Index to speed up queries by user
 }

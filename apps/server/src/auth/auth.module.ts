@@ -14,7 +14,6 @@ import { CookieService } from './services/cookie.service';
 import { GoogleController } from './controllers/providers/google.controller';
 import { DropboxStrategy } from './strategies/dropbox.strategy';
 import { DropboxController } from './controllers/providers/dropbox.controller';
-import { WebhookService } from 'src/webhook/webhook.service';
 import { ProvidersModule } from 'src/providers/providers.module';
 
 const strategies = [
@@ -30,7 +29,6 @@ const services = [
   TokenService,
   SessionService,
   CookieService,
-  WebhookService
 ];
 
 const controllers = [
