@@ -1,16 +1,23 @@
-import { Module } from '@nestjs/common';
+// src/providers/providers.module.ts
+import { Module, forwardRef } from '@nestjs/common';
 import { ProvidersService } from './providers.service';
-import { PrismaService } from 'src/database/prisma.service';
 import { GoogleService } from './google/google.service';
+import { AuthModule } from 'src/auth/auth.module';
+import { GoogleController } from './google/google.controller';
 
 const providers = [
   ProvidersService,
-  GoogleService
+  GoogleService,
+];
+
+const controllers = [
+  GoogleController
 ];
 
 @Module({
-  providers: [...providers, PrismaService],
-  exports: [...providers]
+  imports: [forwardRef(() => AuthModule)], // Use forwardRef here
+  controllers,
+  providers,
+  exports: [...providers],
 })
-
 export class ProvidersModule {}

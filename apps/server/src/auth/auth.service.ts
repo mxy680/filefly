@@ -66,6 +66,7 @@ export class AuthService {
 
             // Retrieve Files from Provider
             await this.providerService.retrieveData(provider, providerAccessToken, userId);
+
         }
 
         // Send the files back in the response

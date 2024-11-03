@@ -6,9 +6,8 @@ import { AuthGuard } from '../guards/auth.guard';
 import { SessionService } from '../services/session.service';
 import { AuthService } from '../auth.service';
 
-type User = {
-  sessionId: number;
-}
+// Types and Interfaces
+import { User } from 'src/types/user';
 
 @Controller('auth')
 export class AuthController {

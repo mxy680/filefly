@@ -3,6 +3,7 @@ import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/database/prisma.service';
+import { GoogleDriveFile } from 'src/types/files';
 
 @Injectable()
 export class GoogleService {
@@ -15,7 +16,7 @@ export class GoogleService {
         return { drive, client };
     }
 
-    async listFiles(accessToken: string, userId: number): Promise<drive_v3.Schema$File[]> {
+    async uploadFiles(accessToken: string, userId: number): Promise<drive_v3.Schema$File[]> {
         const { drive } = this.getDrive(accessToken);
 
         try {
@@ -37,6 +38,19 @@ export class GoogleService {
             }));
 
             return response.data.files || [];
+        } catch (error) {
+            console.error('Error retrieving files:', error.message);
+            throw new Error('Failed to retrieve Google Drive files');
+        }
+    }
+
+    async listFiles(userId: number): Promise<GoogleDriveFile[]> {
+        try {
+            const files = await this.prismaService.googleDriveFile.findMany({
+                where: { userId }
+            });
+
+            return files || [];
         } catch (error) {
             console.error('Error retrieving files:', error.message);
             throw new Error('Failed to retrieve Google Drive files');

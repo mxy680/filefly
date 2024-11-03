@@ -35,7 +35,7 @@ export class ProvidersService {
     async retrieveData(provider: string, accessToken: string, userId: number) {
         switch (provider) {
             case 'google':
-                await this.googleService.listFiles(accessToken, userId);
+                await this.googleService.uploadFiles(accessToken, userId);
                 break;
             default:
                 throw new Error('Provider not supported');

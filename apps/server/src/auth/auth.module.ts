@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+// src/auth/auth.module.ts
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './controllers/auth.controller';
 import { UsersModule } from 'src/users/users.module';
@@ -39,9 +40,8 @@ const controllers = [
 
 @Module({
   imports: [
-    UsersModule,
     PassportModule,
-    ProvidersModule,
+    forwardRef(() => ProvidersModule), // Use forwardRef here
     JwtModule.register({
       secret: 'secret',
       signOptions: { expiresIn: '60s' },
@@ -49,6 +49,6 @@ const controllers = [
   ],
   controllers: [...controllers],
   providers: [...strategies, ...services],
+  exports: [...strategies, ...services],
 })
-
-export class AuthModule { }
+export class AuthModule {}
