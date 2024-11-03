@@ -24,13 +24,34 @@ export class AuthService {
         providerAccessToken: string,
         providerRefreshToken: string): Promise<Response> {
 
-        // Onboard the user or log them in
-        const userId = await this.userService.onboardUser(
-            provider,
-            providerId,
-            providerAccessToken,
-            providerRefreshToken
-        );
+        let userId: number;
+        userId = await this.userService.findUser(providerId, provider);
+        const newUser = !userId;
+        if (!userId) {
+            // User has not authenticated this provider
+            userId = await this.userService.createUser();
+            await this.providerService.createProvider(
+                userId,
+                providerId,
+                provider,
+                providerAccessToken,
+                providerRefreshToken
+            );
+        } else {
+            // User has already authenticated this provider
+            // Update Provider Tokens
+            await this.providerService.updateProviderTokens(
+                providerId,
+                provider,
+                providerAccessToken,
+                providerRefreshToken
+            );
+        }
+
+        // Ensure user exists
+        if (!userId) {
+            throw new UnauthorizedException('User not found');
+        }
 
         // Initialize a new session
         const sessionId = await this.sessionService.initializeSession(userId);
@@ -39,11 +60,13 @@ export class AuthService {
         await this.sessionService.updateSession(sessionAccessToken, sessionRefreshToken, sessionId);
         this.setCookies(res, sessionAccessToken, sessionRefreshToken);
 
-        // Setup Webhook
-        await this.providerService.setupWebhook(provider, providerAccessToken, userId);
+        if (newUser) {
+            // Setup Webhook
+            await this.providerService.setupWebhook(provider, providerAccessToken, userId);
 
-        // Retrieve Files from Provider
-        await this.providerService.retrieveData(provider, providerAccessToken, userId);
+            // Retrieve Files from Provider
+            await this.providerService.retrieveData(provider, providerAccessToken, userId);
+        }
 
         // Send the files back in the response
         return res;
