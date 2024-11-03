@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  providers Provider[]
-  sessions  Session[]
+  id                  Int                  @id @default(autoincrement())
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  providers           Provider[]
+  sessions            Session[]
+  googleDriveWebhooks GoogleDriveWebhook[]
 }
 
 model Provider {
   id           Int      @id @default(autoincrement())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  provider     String // e.g., 'google', 'facebook'
+  provider     String
   providerId   String // Unique ID from the provider (e.g., Google user ID)
   accessToken  String
   refreshToken String
@@ -34,7 +35,21 @@ model Session {
   createdAt    DateTime @default(now())
   expiresAt    DateTime
   accessToken  String?  @unique // Unique session token
-  refreshToken String?  @unique // unique refresh token for session renewal
+  refreshToken String?  @unique // Unique refresh token for session renewal
   userId       Int
   user         User     @relation(fields: [userId], references: [id])
+}
+
+model GoogleDriveWebhook {
+  id         String   @id @default(cuid())
+  userId     Int      @unique
+  channelId  String   @unique
+  resourceId String
+  expiration DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiration])
 }

@@ -14,6 +14,8 @@ import { CookieService } from './services/cookie.service';
 import { GoogleController } from './controllers/providers/google.controller';
 import { DropboxStrategy } from './strategies/dropbox.strategy';
 import { DropboxController } from './controllers/providers/dropbox.controller';
+import { WebhookService } from 'src/webhook/webhook.service';
+import { ProvidersModule } from 'src/providers/providers.module';
 
 const strategies = [
   GoogleStrategy,
@@ -27,7 +29,8 @@ const services = [
   ProvidersService,
   TokenService,
   SessionService,
-  CookieService
+  CookieService,
+  WebhookService
 ];
 
 const controllers = [
@@ -40,10 +43,11 @@ const controllers = [
   imports: [
     UsersModule,
     PassportModule,
+    ProvidersModule,
     JwtModule.register({
       secret: 'secret',
       signOptions: { expiresIn: '60s' },
-    })
+    }),
   ],
   controllers: [...controllers],
   providers: [...strategies, ...services],
