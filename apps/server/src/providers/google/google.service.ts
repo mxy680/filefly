@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
+
 import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
+
 import { PrismaService } from 'src/database/prisma.service';
-import { GoogleDriveFile } from 'src/types/files';
 import { FilesService } from 'src/files/files.service';
+import { InferenceService } from 'src/inference/inference.service';
+
+import { GoogleDriveFile } from 'src/types/files';
 import { GoogleDriveFile as PrismaGoogleDriveFile } from '@prisma/client';
 
 @Injectable()
@@ -12,6 +16,7 @@ export class GoogleService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly fileService: FilesService,
+        private readonly inferenceService: InferenceService,
     ) { }
 
     getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
@@ -26,7 +31,6 @@ export class GoogleService {
 
         try {
             const response = await drive.files.list({
-                pageSize: 100, // Adjust as needed
                 fields: 'files(id, name, mimeType)', // Specify fields to retrieve
                 q: 'trashed = false', // Exclude files in the trash
             });
@@ -139,8 +143,22 @@ export class GoogleService {
         }));
     }
 
-    async indexFiles(accessToken: string, userId: number) {
-        
+    async indexFiles(userId: number) {
+        try {
+            // Get user's files
+            const files = await this.prismaService.googleDriveFile.findMany({
+                where: { userId },
+            });
+
+            // Index files
+            await Promise.all(files.map(async (file: PrismaGoogleDriveFile) => {
+                await this.inferenceService.index(file);
+            }));
+
+        } catch (error) {
+            console.error('Error indexing files:', error.message);
+            throw new Error('Failed to index files');
+        }
     }
 }
 

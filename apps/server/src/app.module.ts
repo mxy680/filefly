@@ -7,6 +7,7 @@ import { ProvidersModule } from './providers/providers.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { ProducerModule } from './rabbitmq/producer/producer.module';
 import { ConsumerModule } from './rabbitmq/consumer/consumer.module';
+import { InferenceModule } from './inference/inference.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ConsumerModule } from './rabbitmq/consumer/consumer.module';
     WebhookModule,
     ProducerModule,
     ConsumerModule,
+    InferenceModule,
   ],
   
   providers: [PrismaService],
