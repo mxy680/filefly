@@ -50,7 +50,6 @@ export class GoogleWebhookController {
     }
 
     // Acknowledge the webhook notification
-    console.log('Webhook acknowledged');
     res.status(HttpStatus.OK).send();
   }
 }

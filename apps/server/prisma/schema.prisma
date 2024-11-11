@@ -46,13 +46,13 @@ model Session {
 
 // Google Drive
 model GoogleDriveWebhook {
-  id          String  @id @default(cuid())
-  userId      Int     @unique
-  channelId   String  @unique
-  resourceId  String  @unique
-  accessToken String  @unique
+  id          String   @id @default(cuid())
+  userId      Int      @unique
+  channelId   String   @unique
+  resourceId  String   @unique
+  accessToken String   @unique
   pageToken   String
-  expiration DateTime
+  expiration  DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -62,14 +62,18 @@ model GoogleDriveWebhook {
 }
 
 model GoogleDriveFile {
-  id           String    @id // Google Drive file ID
-  name         String
-  mimeType     String
-  webViewLink  String? // Optional link to view the file online
-  createdTime  DateTime?
-  modifiedTime DateTime?
-  userId       Int
-  user         User      @relation(fields: [userId], references: [id])
+  id            String    @id // Google Drive file ID
+  name          String
+  mimeType      String
+  webViewLink   String? // Optional link to view the file online
+  thumbnailLink String? // Optional thumbnail URL
+  iconLink      String? // Optional icon URL
+  size          Int?
+  createdTime   DateTime?
+  modifiedTime  DateTime?
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

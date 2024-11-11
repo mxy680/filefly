@@ -4,6 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDriveFile } from 'src/types/files';
+import * as fs from 'fs';
 
 @Injectable()
 export class GoogleService {
@@ -142,12 +143,17 @@ export class GoogleService {
                 }
                 else {
                     // File was added or modified
+                    console.log('File was added or modified:', file?.id);
+
                     await this.prismaService.googleDriveFile.upsert({
                         where: { id: file.id },
                         update: {
                             name: file.name,
                             mimeType: file.mimeType,
                             webViewLink: file.webViewLink,
+                            thumbnailLink: file.thumbnailLink,
+                            iconLink: file.iconLink,
+                            size: Number(file.size),
                             createdTime: new Date(file.createdTime),
                             modifiedTime: new Date(file.modifiedTime),
                         },
@@ -157,6 +163,9 @@ export class GoogleService {
                             name: file.name,
                             mimeType: file.mimeType,
                             webViewLink: file.webViewLink,
+                            thumbnailLink: file.thumbnailLink,
+                            iconLink: file.iconLink,
+                            size: Number(file.size),
                             createdTime: new Date(file.createdTime),
                             modifiedTime: new Date(file.modifiedTime),
                         },
