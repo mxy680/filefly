@@ -1,7 +1,5 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
-import { GoogleService } from 'src/providers/google/google.service';
-import { ProvidersService } from 'src/providers/providers.service';
 
 @Injectable()
 export class UsersService {

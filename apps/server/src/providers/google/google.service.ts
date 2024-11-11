@@ -4,11 +4,15 @@ import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDriveFile } from 'src/types/files';
-import * as fs from 'fs';
+import { FilesService } from 'src/files/files.service';
+import { GoogleDriveFile as PrismaGoogleDriveFile } from '@prisma/client';
 
 @Injectable()
 export class GoogleService {
-    constructor(private readonly prismaService: PrismaService) { }
+    constructor(
+        private readonly prismaService: PrismaService,
+        private readonly fileService: FilesService,
+    ) { }
 
     getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
         const client = new OAuth2Client();
@@ -17,7 +21,7 @@ export class GoogleService {
         return { drive, client };
     }
 
-    async uploadFiles(accessToken: string, userId: number): Promise<drive_v3.Schema$File[]> {
+    async uploadFiles(accessToken: string, userId: number): Promise<void> {
         const { drive } = this.getDrive(accessToken);
 
         try {
@@ -29,40 +33,20 @@ export class GoogleService {
 
             // Create the files in the database (user was just created)
             await Promise.all(response.data.files.map(async (fileResponse: drive_v3.Schema$File) => {
-                const fileId = fileResponse.id;
                 const file = await drive.files.get({
-                    fileId,
+                    fileId: fileResponse.id,
                     fields: '*',
                 });
 
-                // Upsert the file in the database
-                await this.prismaService.googleDriveFile.create({
-                    data: {
-                        userId,
-                        id: file.data.id,
-                        name: file.data.name,
-                        mimeType: file.data.mimeType,
-                        webViewLink: file.data.webViewLink,
-                        thumbnailLink: file.data.thumbnailLink,
-                        iconLink: file.data.iconLink,
-                        size: Number(file.data.size),
-                        sha1: file.data.md5Checksum,
-                        sha256: file.data.sha256Checksum,
-                        md5: file.data.md5Checksum,
-                        createdTime: new Date(file.data.createdTime),
-                        modifiedTime: new Date(file.data.modifiedTime),
-                    }
-                });
+                await this.fileService.createFile(userId, file.data as GoogleDriveFile);
             }));
-
-            return response.data.files || [];
         } catch (error) {
             console.error('Error retrieving files:', error.message);
             throw new Error('Failed to retrieve Google Drive files');
         }
     }
 
-    async listFiles(userId: number): Promise<GoogleDriveFile[]> {
+    async listFiles(userId: number): Promise<PrismaGoogleDriveFile[]> {
         try {
             const files = await this.prismaService.googleDriveFile.findMany({
                 where: { userId }
@@ -160,39 +144,10 @@ export class GoogleService {
                     // File was added or modified
                     console.log('File was added or modified:', file?.id);
 
-                    await this.prismaService.googleDriveFile.upsert({
-                        where: { id: file.id },
-                        update: {
-                            name: file.name,
-                            mimeType: file.mimeType,
-                            webViewLink: file.webViewLink,
-                            thumbnailLink: file.thumbnailLink,
-                            iconLink: file.iconLink,
-                            size: Number(file.size),
-                            sha1: file.sha1Checksum,
-                            sha256: file.sha256Checksum,
-                            md5: file.md5Checksum,
-                            createdTime: new Date(file.createdTime),
-                            modifiedTime: new Date(file.modifiedTime),
-                        },
-                        create: {
-                            userId,
-                            id: file.id,
-                            name: file.name,
-                            mimeType: file.mimeType,
-                            webViewLink: file.webViewLink,
-                            thumbnailLink: file.thumbnailLink,
-                            iconLink: file.iconLink,
-                            size: Number(file.size),
-                            sha1: file.sha1Checksum,
-                            sha256: file.sha256Checksum,
-                            md5: file.md5Checksum,
-                            createdTime: new Date(file.createdTime),
-                            modifiedTime: new Date(file.modifiedTime),
-                        },
-                    });
+                    await this.fileService.upsertFile(userId, file as GoogleDriveFile);
                 }
             }
         }));
     }
 }
+
