@@ -69,6 +69,7 @@ model GoogleDriveFile {
   thumbnailLink String? // Optional thumbnail URL
   iconLink      String? // Optional icon URL
   size          Int?
+  hashed        String? // Hashed content for comparison
   createdTime   DateTime?
   modifiedTime  DateTime?
 

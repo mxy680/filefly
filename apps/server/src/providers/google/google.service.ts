@@ -28,14 +28,27 @@ export class GoogleService {
             });
 
             // Create the files in the database (user was just created)
-            await Promise.all(response.data.files.map(async (file: drive_v3.Schema$File) => {
+            await Promise.all(response.data.files.map(async (fileResponse: drive_v3.Schema$File) => {
+                const fileId = fileResponse.id;
+                const file = await drive.files.get({
+                    fileId,
+                    fields: '*',
+                });
+
                 // Upsert the file in the database
                 await this.prismaService.googleDriveFile.create({
                     data: {
                         userId,
-                        id: file.id,
-                        name: file.name,
-                        mimeType: file.mimeType,
+                        id: file.data.id,
+                        name: file.data.name,
+                        mimeType: file.data.mimeType,
+                        webViewLink: file.data.webViewLink,
+                        thumbnailLink: file.data.thumbnailLink,
+                        iconLink: file.data.iconLink,
+                        size: Number(file.data.size),
+                        hashed: file.data.sha256Checksum,
+                        createdTime: new Date(file.data.createdTime),
+                        modifiedTime: new Date(file.data.modifiedTime),
                     }
                 });
             }));
@@ -145,6 +158,9 @@ export class GoogleService {
                     // File was added or modified
                     console.log('File was added or modified:', file?.id);
 
+                    // Save file as json
+                    fs.writeFileSync(`./files/${file?.id}.json`, JSON.stringify(file, null, 2));
+
                     await this.prismaService.googleDriveFile.upsert({
                         where: { id: file.id },
                         update: {
@@ -154,6 +170,7 @@ export class GoogleService {
                             thumbnailLink: file.thumbnailLink,
                             iconLink: file.iconLink,
                             size: Number(file.size),
+                            hashed: file.sha256Checksum,
                             createdTime: new Date(file.createdTime),
                             modifiedTime: new Date(file.modifiedTime),
                         },
@@ -166,6 +183,7 @@ export class GoogleService {
                             thumbnailLink: file.thumbnailLink,
                             iconLink: file.iconLink,
                             size: Number(file.size),
+                            hashed: file.sha256Checksum,
                             createdTime: new Date(file.createdTime),
                             modifiedTime: new Date(file.modifiedTime),
                         },
