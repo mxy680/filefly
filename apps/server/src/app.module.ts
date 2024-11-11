@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './database/prisma.service';
 import { ProvidersModule } from './providers/providers.module';
 import { WebhookModule } from './webhook/webhook.module';
+import { ProducerModule } from './rabbitmq/producer/producer.module';
+import { ConsumerModule } from './rabbitmq/consumer/consumer.module';
 
 @Module({
   imports: [
@@ -15,9 +17,11 @@ import { WebhookModule } from './webhook/webhook.module';
       isGlobal: true,
     }),
     ProvidersModule,
-    WebhookModule
+    WebhookModule,
+    ProducerModule,
+    ConsumerModule,
   ],
-  controllers: [],
+  
   providers: [PrismaService],
 })
 export class AppModule { }
