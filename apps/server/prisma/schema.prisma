@@ -31,6 +31,7 @@ model Provider {
   user         User?    @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerId]) // Unique combination of provider and providerId
+  @@unique([provider, accessToken]) // Unique combination of provider and accessToken
 }
 
 model Session {
@@ -45,10 +46,12 @@ model Session {
 
 // Google Drive
 model GoogleDriveWebhook {
-  id         String   @id @default(cuid())
-  userId     Int      @unique
-  channelId  String   @unique
-  resourceId String
+  id          String  @id @default(cuid())
+  userId      Int     @unique
+  channelId   String  @unique
+  resourceId  String  @unique
+  accessToken String  @unique
+  pageToken   String
   expiration DateTime
 
   createdAt DateTime @default(now())

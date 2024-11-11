@@ -22,6 +22,13 @@ export class ProvidersService {
         }).then((result) => result.id);
     }
 
+    async getProviderUser(accessToken: string, provider: string): Promise<number> {
+        return await this.prisma.provider.findUnique({
+            where: { provider_accessToken: { accessToken, provider } }
+        }).then((result) => result.userId);
+    }
+    
+
     async setupWebhook(provider: string, accessToken: string, userId: number) {
         switch (provider) {
             case 'google':
