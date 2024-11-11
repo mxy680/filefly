@@ -46,7 +46,9 @@ export class GoogleService {
                         thumbnailLink: file.data.thumbnailLink,
                         iconLink: file.data.iconLink,
                         size: Number(file.data.size),
-                        hashed: file.data.sha256Checksum,
+                        sha1: file.data.md5Checksum,
+                        sha256: file.data.sha256Checksum,
+                        md5: file.data.md5Checksum,
                         createdTime: new Date(file.data.createdTime),
                         modifiedTime: new Date(file.data.modifiedTime),
                     }
@@ -158,9 +160,6 @@ export class GoogleService {
                     // File was added or modified
                     console.log('File was added or modified:', file?.id);
 
-                    // Save file as json
-                    fs.writeFileSync(`./files/${file?.id}.json`, JSON.stringify(file, null, 2));
-
                     await this.prismaService.googleDriveFile.upsert({
                         where: { id: file.id },
                         update: {
@@ -170,7 +169,9 @@ export class GoogleService {
                             thumbnailLink: file.thumbnailLink,
                             iconLink: file.iconLink,
                             size: Number(file.size),
-                            hashed: file.sha256Checksum,
+                            sha1: file.sha1Checksum,
+                            sha256: file.sha256Checksum,
+                            md5: file.md5Checksum,
                             createdTime: new Date(file.createdTime),
                             modifiedTime: new Date(file.modifiedTime),
                         },
@@ -183,7 +184,9 @@ export class GoogleService {
                             thumbnailLink: file.thumbnailLink,
                             iconLink: file.iconLink,
                             size: Number(file.size),
-                            hashed: file.sha256Checksum,
+                            sha1: file.sha1Checksum,
+                            sha256: file.sha256Checksum,
+                            md5: file.md5Checksum,
                             createdTime: new Date(file.createdTime),
                             modifiedTime: new Date(file.modifiedTime),
                         },
