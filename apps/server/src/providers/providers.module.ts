@@ -5,6 +5,7 @@ import { GoogleService } from './google/google.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { GoogleController } from './google/google.controller';
 import { FilesService } from 'src/files/files.service';
+import { ProducerModule } from 'src/rabbitmq/producer/producer.module';
 
 const providers = [
   ProvidersService,
@@ -17,7 +18,7 @@ const controllers = [
 ];
 
 @Module({
-  imports: [forwardRef(() => AuthModule)], // Use forwardRef here
+  imports: [forwardRef(() => AuthModule), ProducerModule], // Use forwardRef here
   controllers,
   providers,
   exports: [...providers],

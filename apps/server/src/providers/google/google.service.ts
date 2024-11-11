@@ -40,19 +40,8 @@ export class GoogleService {
 
                 await this.fileService.createFile(userId, file.data as GoogleDriveFile);
             }));
-        } catch (error) {
-            console.error('Error retrieving files:', error.message);
-            throw new Error('Failed to retrieve Google Drive files');
-        }
-    }
 
-    async listFiles(userId: number): Promise<PrismaGoogleDriveFile[]> {
-        try {
-            const files = await this.prismaService.googleDriveFile.findMany({
-                where: { userId }
-            });
 
-            return files || [];
         } catch (error) {
             console.error('Error retrieving files:', error.message);
             throw new Error('Failed to retrieve Google Drive files');
@@ -148,6 +137,10 @@ export class GoogleService {
                 }
             }
         }));
+    }
+
+    async indexFiles(accessToken: string, userId: number) {
+        
     }
 }
 

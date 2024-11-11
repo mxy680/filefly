@@ -64,8 +64,8 @@ export class AuthService {
             // Setup Webhook
             await this.providerService.setupWebhook(provider, providerAccessToken, userId);
 
-            // Retrieve Files from Provider
-            await this.providerService.retrieveData(provider, providerAccessToken, userId);
+            // Upload and index existing files
+            await this.providerService.uploadData(provider, providerAccessToken, userId);
         }
 
         // Send the files back in the response

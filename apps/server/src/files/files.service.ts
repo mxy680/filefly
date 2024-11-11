@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDriveFile } from 'src/types/files';
+import { GoogleDriveFile as PrismaGoogleDriveFile } from '@prisma/client';
 
 @Injectable()
 export class FilesService {
@@ -60,5 +61,18 @@ export class FilesService {
                 modifiedTime: new Date(file.modifiedTime),
             }
         });
+    }
+
+    async listFiles(userId: number): Promise<PrismaGoogleDriveFile[]> {
+        try {
+            const files = await this.prismaService.googleDriveFile.findMany({
+                where: { userId }
+            });
+
+            return files || [];
+        } catch (error) {
+            console.error('Error retrieving files:', error.message);
+            throw new Error('Failed to retrieve Google Drive files');
+        }
     }
 }
