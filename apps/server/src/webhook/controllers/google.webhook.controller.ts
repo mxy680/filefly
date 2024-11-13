@@ -43,6 +43,9 @@ export class GoogleWebhookController {
 
       // Upload the changes to the database
       await this.googleService.uploadChanges(changes, userId);
+      
+      // Index the changes
+      await this.googleService.indexChanges(changes, userId);
 
       // Update the pageToken in the database for future changes
       await this.prismaService.googleDriveWebhook.update({

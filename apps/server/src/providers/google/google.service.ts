@@ -16,7 +16,7 @@ export class GoogleService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly fileService: FilesService,
-        private readonly inferenceService: InferenceService,
+        private readonly inferenceService: InferenceService
     ) { }
 
     getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
@@ -143,7 +143,7 @@ export class GoogleService {
         }));
     }
 
-    async indexFiles(userId: number) {
+    async indexDrive(userId: number) {
         try {
             // Get user's files
             const files = await this.prismaService.googleDriveFile.findMany({
@@ -154,11 +154,16 @@ export class GoogleService {
             await Promise.all(files.map(async (file: PrismaGoogleDriveFile) => {
                 await this.inferenceService.index(file);
             }));
-
         } catch (error) {
             console.error('Error indexing files:', error.message);
             throw new Error('Failed to index files');
         }
+    }
+
+    async indexChanges(changes: drive_v3.Schema$Change[], userId: number) {
+        changes.forEach(async (change: drive_v3.Schema$Change) => {
+            this.inferenceService.index(change.file as GoogleDriveFile);
+        });
     }
 }
 

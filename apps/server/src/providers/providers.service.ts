@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleService } from './google/google.service';
+import { InferenceService } from 'src/inference/inference.service';
 
 @Injectable()
 export class ProvidersService {
@@ -43,7 +44,7 @@ export class ProvidersService {
         switch (provider) {
             case 'google':
                 await this.googleService.uploadFiles(accessToken, userId);
-                await this.googleService.indexFiles(userId);
+                await this.googleService.indexDrive(userId);
                 break;
             default:
                 throw new Error('Provider not supported');
