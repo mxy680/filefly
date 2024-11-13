@@ -50,7 +50,7 @@ export class ProvidersService {
         switch (provider) {
             case 'google':
                 await this.googleService.uploadFiles(accessToken, userId);
-                await this.googleService.indexDrive(userId, accessToken);
+                await this.googleService.indexDrive(accessToken, userId);
                 break;
             default:
                 throw new Error('Provider not supported');

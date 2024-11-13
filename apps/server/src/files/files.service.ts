@@ -75,4 +75,13 @@ export class FilesService {
             throw new Error('Failed to retrieve Google Drive files');
         }
     }
+
+    async fileWithHashExists(userId: number, hash: string, hashMethod: 'sha1' | 'sha256' | 'md5'): Promise<boolean> {
+        const file = await this.prismaService.googleDriveFile.findFirst({
+            where: { userId, [hashMethod]: hash }
+        });
+
+        return !!file;
+    }
+        
 }

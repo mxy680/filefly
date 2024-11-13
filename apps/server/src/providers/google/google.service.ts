@@ -133,13 +133,16 @@ export class GoogleService {
                     });
                 }
                 else {
-                    await this.fileService.upsertFile(userId, file as GoogleDriveFile);
+                    // Check if file hash exists 
+                    if (!this.fileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256')) {
+                        await this.fileService.upsertFile(userId, file as GoogleDriveFile);
+                    }
                 }
             }
         }));
     }
 
-    async indexDrive(userId: number, accessToken: string) {
+    async indexDrive(accessToken: string, userId: number) {
         try {
             const { drive } = this.getDrive(accessToken);
             // Get user's files
@@ -160,8 +163,10 @@ export class GoogleService {
     async indexChanges(changes: drive_v3.Schema$Change[], userId: number, accessToken: string) {
         const { drive } = this.getDrive(accessToken);
         changes.forEach(async (change: drive_v3.Schema$Change) => {
-            if (change.changeType === 'file' && !(change.removed || change.file?.trashed)) {
-                this.inferenceService.index(change.file as GoogleDriveFile, drive, userId);
+            if (change.changeType === 'file'
+                && !(change.removed || change.file?.trashed)
+                && !this.fileService.fileWithHashExists(userId, change.file?.sha256Checksum, 'sha256')) {
+                await this.inferenceService.index(change.file as GoogleDriveFile, drive, userId);
             }
         });
     }
