@@ -127,24 +127,21 @@ export class GoogleService {
             // Ensure file data is available
             if (changeType === 'file') {
                 if (removed || file?.trashed) {
-                    console.log('File was removed:', file?.id);
                     // File is permanently deleted or access was revoked
                     await this.prismaService.googleDriveFile.deleteMany({
                         where: { id: file?.id, userId },
                     });
                 }
                 else {
-                    // File was added or modified
-                    console.log('File was added or modified:', file?.id);
-
                     await this.fileService.upsertFile(userId, file as GoogleDriveFile);
                 }
             }
         }));
     }
 
-    async indexDrive(userId: number) {
+    async indexDrive(userId: number, accessToken: string) {
         try {
+            const { drive } = this.getDrive(accessToken);
             // Get user's files
             const files = await this.prismaService.googleDriveFile.findMany({
                 where: { userId },
@@ -152,7 +149,7 @@ export class GoogleService {
 
             // Index files
             await Promise.all(files.map(async (file: PrismaGoogleDriveFile) => {
-                await this.inferenceService.index(file);
+                await this.inferenceService.index(file, drive, userId);
             }));
         } catch (error) {
             console.error('Error indexing files:', error.message);
@@ -160,9 +157,12 @@ export class GoogleService {
         }
     }
 
-    async indexChanges(changes: drive_v3.Schema$Change[], userId: number) {
+    async indexChanges(changes: drive_v3.Schema$Change[], userId: number, accessToken: string) {
+        const { drive } = this.getDrive(accessToken);
         changes.forEach(async (change: drive_v3.Schema$Change) => {
-            this.inferenceService.index(change.file as GoogleDriveFile);
+            if (change.changeType === 'file' && !(change.removed || change.file?.trashed)) {
+                this.inferenceService.index(change.file as GoogleDriveFile, drive, userId);
+            }
         });
     }
 }

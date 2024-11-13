@@ -7,11 +7,13 @@ import { GoogleController } from './google/google.controller';
 import { FilesService } from 'src/files/files.service';
 import { ProducerModule } from 'src/rabbitmq/producer/producer.module';
 import { InferenceModule } from 'src/inference/inference.module';
+import { WeaviateService } from 'src/weaviate/weaviate.service';
 
 const providers = [
   ProvidersService,
   FilesService,
   GoogleService,
+  WeaviateService
 ];
 
 const controllers = [

@@ -8,6 +8,7 @@ import { WebhookModule } from './webhook/webhook.module';
 import { ProducerModule } from './rabbitmq/producer/producer.module';
 import { ConsumerModule } from './rabbitmq/consumer/consumer.module';
 import { InferenceModule } from './inference/inference.module';
+import { WeaviateModule } from './weaviate/weaviate.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { InferenceModule } from './inference/inference.module';
     ProducerModule,
     ConsumerModule,
     InferenceModule,
+    WeaviateModule,
   ],
   
   providers: [PrismaService],

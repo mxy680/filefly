@@ -43,9 +43,12 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "pdf-parse": "^1.1.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "uuid": "^11.0.2"
+    "tesseract.js": "^5.1.1",
+    "uuid": "^11.0.2",
+    "weaviate-client": "^3.2.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

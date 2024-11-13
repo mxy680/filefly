@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleService } from './google/google.service';
 import { InferenceService } from 'src/inference/inference.service';
+import { WeaviateService } from 'src/weaviate/weaviate.service';
 
 @Injectable()
 export class ProvidersService {
     constructor(
         private prisma: PrismaService,
-        private googleService: GoogleService
+        private googleService: GoogleService,
+        private weaviateService: WeaviateService
     ) { }
 
     async updateProviderTokens(providerId: string, provider: string, accessToken: string, refreshToken: string): Promise<void> {
@@ -41,10 +43,14 @@ export class ProvidersService {
     }
 
     async uploadData(provider: string, accessToken: string, userId: number) {
+        // Add Tenant to Weaviate
+        await this.weaviateService.addTenant(userId);
+
+        // Perform provider specific actions
         switch (provider) {
             case 'google':
                 await this.googleService.uploadFiles(accessToken, userId);
-                await this.googleService.indexDrive(userId);
+                await this.googleService.indexDrive(userId, accessToken);
                 break;
             default:
                 throw new Error('Provider not supported');
