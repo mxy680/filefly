@@ -12,7 +12,7 @@ export class InferenceService {
     async index(file: PrismaGoogleDriveFile | GoogleDriveFile, drive: drive_v3.Drive, userId: Number): Promise<void> {
         switch (file.mimeType) {
             case 'application/pdf':
-                await this.documentService.indexPdf(file, drive, userId); 
+                const uuid = await this.documentService.indexPdf(file, drive, userId); 
                 break;
             default:
                 throw new Error('Unsupported file type');

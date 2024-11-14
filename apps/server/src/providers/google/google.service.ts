@@ -116,10 +116,12 @@ export class GoogleService {
         }
     }
 
-    async uploadChanges(changes: drive_v3.Schema$Change[], userId: number) {
+    async uploadChanges(changes: drive_v3.Schema$Change[], userId: number, accessToken: string) {
         if (changes.length === 0) {
             return;
         }
+
+        const { drive } = this.getDrive(accessToken);
 
         await Promise.all(changes.map(async (change) => {
             const { file, removed, changeType } = change;
@@ -134,8 +136,11 @@ export class GoogleService {
                 }
                 else {
                     // Check if file hash exists 
-                    if (!this.fileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256')) {
+                    const fileHashExists = await this.fileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
+                    if (!fileHashExists) {
+                        console.log('File hash does not exist, uploading file:', file?.name);
                         await this.fileService.upsertFile(userId, file as GoogleDriveFile);
+                        await this.inferenceService.index(change.file as GoogleDriveFile, drive, userId);
                     }
                 }
             }
@@ -158,17 +163,6 @@ export class GoogleService {
             console.error('Error indexing files:', error.message);
             throw new Error('Failed to index files');
         }
-    }
-
-    async indexChanges(changes: drive_v3.Schema$Change[], userId: number, accessToken: string) {
-        const { drive } = this.getDrive(accessToken);
-        changes.forEach(async (change: drive_v3.Schema$Change) => {
-            if (change.changeType === 'file'
-                && !(change.removed || change.file?.trashed)
-                && !this.fileService.fileWithHashExists(userId, change.file?.sha256Checksum, 'sha256')) {
-                await this.inferenceService.index(change.file as GoogleDriveFile, drive, userId);
-            }
-        });
     }
 }
 

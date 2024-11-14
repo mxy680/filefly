@@ -22,7 +22,6 @@ export class GoogleWebhookController {
     @Headers('X-Goog-Resource-ID') resourceId: string,
     @Headers('X-Goog-Resource-State') resourceState: string,
   ) {
-    console.log('Received Google Drive webhook notification:', resourceState, resourceId);
     if (resourceState === 'change') {
       // Fetch the pageToken from the database
       const watch = await this.prismaService.googleDriveWebhook.findUnique({
@@ -42,11 +41,8 @@ export class GoogleWebhookController {
       // Get the userId using the accessToken
       const userId = await this.providerService.getProviderUser(accessToken, 'google');
 
-      // Upload the changes to the database
-      await this.googleService.uploadChanges(changes, userId);
-      
-      // Index the changes
-      await this.googleService.indexChanges(changes, userId, accessToken);
+      // Upload and index the changes to the database
+      await this.googleService.uploadChanges(changes, userId, accessToken);
 
       // Update the pageToken in the database for future changes
       await this.prismaService.googleDriveWebhook.update({

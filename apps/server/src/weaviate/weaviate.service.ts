@@ -47,13 +47,15 @@ export class WeaviateService implements OnModuleInit {
         });
     }
 
-    async insert(collectionName: string, data: any, tenant: Number) {
+    async insert(collectionName: string, data: any[], tenant: Number) {
+        console.log('Inserting file for tenant:', tenant);
         const collection = await this.getCollection(collectionName, tenant);
-        if (data.length > 1) {
-            return collection.data.insert(data);
+        if (data.length === 1) {
+            return await collection.data.insert(data[0]);
         } else {
-            return collection.data.insertMany(data);
+            return await collection.data.insertMany(data);
         }
+
     }
 
     async queryText(collectionName: string, query: string, limit = 3) {
