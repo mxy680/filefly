@@ -29,7 +29,7 @@ export class DocumentService {
         }
 
         // Index the content in Weaviate
-        return await this.weaviateService.insert('GoogleDrive', [{ content, mimeType: 'pdf', fileId: file.id, userId }], userId);
+        return await this.weaviateService.insert('GoogleDrive', [{ content, mimeType: 'pdf', fileId: file.id, userId: userId.toString() }], userId);
     }
 }
 

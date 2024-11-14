@@ -46,15 +46,6 @@ read -r -d '' PAYLOAD <<EOF
       }
     },
     {
-      "name": "fileType",
-      "dataType": ["string"],
-      "moduleConfig": {                     
-        "text2vec-openi": {
-          "skip": true
-        }
-      }
-    },
-    {
       "name": "mimeType",
       "dataType": ["string"],
       "moduleConfig": {                     
