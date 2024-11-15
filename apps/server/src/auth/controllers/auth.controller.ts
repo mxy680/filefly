@@ -6,9 +6,6 @@ import { AuthGuard } from '../guards/auth.guard';
 import { SessionService } from '../services/session.service';
 import { AuthService } from '../auth.service';
 
-// Types and Interfaces
-import { User } from 'src/types/user';
-
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -37,7 +34,7 @@ export class AuthController {
   @HttpCode(200)
   async logout(@Req() req: Request, @Res() res: Response) {
     // Get the session ID from the request middleware extraction
-    const { sessionId } = req.user as User;
+    const { sessionId } = req.user as { sessionId: number };
     await this.sessionService.deleteSession(sessionId);
     this.authService.clearCookies(res);
 

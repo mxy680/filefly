@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
+import { VectorizationService } from 'src/vectorization/vectorization.service';
+
 @Injectable()
 export class ConsumerService {
-  processMessage(data: any) {
-    // Logic to handle the message
-    console.log('Processing message:', data);
+  constructor(private readonly vectorizationService: VectorizationService) { }
+
+  async handleVectorizationTask(provider: string, data: any): Promise<void> {
+    await this.vectorizationService.vectorize(provider, data);
   }
 }

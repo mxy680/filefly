@@ -5,18 +5,17 @@ import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
 
 import { PrismaService } from 'src/database/prisma.service';
-import { FilesService } from 'src/files/files.service';
-import { InferenceService } from 'src/inference/inference.service';
+import { GoogleDrivePrismaService } from './google-drive.prisma.service';
+import { ProducerService } from 'src/rabbitmq/producer/producer.service';
 
-import { GoogleDriveFile } from 'src/types/files';
-import { GoogleDriveFile as PrismaGoogleDriveFile } from '@prisma/client';
+import { GoogleDriveFile } from './google-drive.types';
 
 @Injectable()
-export class GoogleService {
+export class GoogleDriveService {
     constructor(
         private readonly prismaService: PrismaService,
-        private readonly fileService: FilesService,
-        private readonly inferenceService: InferenceService
+        private readonly fileService: GoogleDrivePrismaService,
+        private readonly producerService: ProducerService
     ) { }
 
     getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
@@ -83,11 +82,7 @@ export class GoogleService {
             }
 
             // Upsert the webhook in the database
-            await this.prismaService.googleDriveWebhook.upsert({
-                where: { userId },
-                update: { channelId, resourceId, pageToken, accessToken, expiration },
-                create: { userId, channelId, resourceId, pageToken, accessToken, expiration }
-            });
+            await this.fileService.upsertWebhook(userId, channelId, resourceId, pageToken, accessToken, expiration);
 
         } catch (error) {
             console.error('Error starting Google Drive watch:', error);
@@ -130,17 +125,22 @@ export class GoogleService {
             if (changeType === 'file') {
                 if (removed || file?.trashed) {
                     // File is permanently deleted or access was revoked
-                    await this.prismaService.googleDriveFile.deleteMany({
-                        where: { id: file?.id, userId },
-                    });
+                    console.log('Deleting file:', file?.name);
+                    await this.fileService.deleteFile(userId, file?.id);
                 }
                 else {
                     // Check if file hash exists 
                     const fileHashExists = await this.fileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
                     if (!fileHashExists) {
-                        console.log('File hash does not exist, uploading file:', file?.name);
+                        // File is new or updated.
                         await this.fileService.upsertFile(userId, file as GoogleDriveFile);
-                        await this.inferenceService.index(change.file as GoogleDriveFile, drive, userId);
+
+                        // Vectorize file
+                        console.log('Sending vectorization task for file:', file?.name);
+                        await this.producerService.sendVectorizationTask({
+                            provider: 'google-drive',
+                            data: { fileId: file?.id, userId, mimeType: file?.mimeType },
+                        });
                     }
                 }
             }
@@ -156,8 +156,8 @@ export class GoogleService {
             });
 
             // Index files
-            await Promise.all(files.map(async (file: PrismaGoogleDriveFile) => {
-                await this.inferenceService.index(file, drive, userId);
+            await Promise.all(files.map(async (file: any) => {
+
             }));
         } catch (error) {
             console.error('Error indexing files:', error.message);

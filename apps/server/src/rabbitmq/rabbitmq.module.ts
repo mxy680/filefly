@@ -5,11 +5,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   imports: [
     ClientsModule.register([
       {
-        name: 'RABBITMQ_SERVICE',
+        name: 'VECTORIZATION_SERVICE',
         transport: Transport.RMQ,
         options: {
           urls: ['amqp://localhost:5672'],
-          queue: 'my_queue',
+          queue: 'vectorization_queue',
           queueOptions: {
             durable: true,
           },

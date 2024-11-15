@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
-import { GoogleService } from './google/google.service';
-import { InferenceService } from 'src/inference/inference.service';
+import { GoogleDriveService } from './google-drive/google-drive.service';
 import { WeaviateService } from 'src/weaviate/weaviate.service';
 
 @Injectable()
 export class ProvidersService {
     constructor(
         private prisma: PrismaService,
-        private googleService: GoogleService,
+        private googleService: GoogleDriveService,
         private weaviateService: WeaviateService
     ) { }
 
@@ -31,7 +30,6 @@ export class ProvidersService {
         }).then((result) => result.userId);
     }
     
-
     async setupWebhook(provider: string, accessToken: string, userId: number) {
         switch (provider) {
             case 'google':

@@ -1,8 +1,7 @@
 import { Controller, Post, Req, Res, HttpStatus, Headers } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { PrismaService } from 'src/database/prisma.service';
-import { FilesService } from 'src/files/files.service';
-import { GoogleService } from 'src/providers/google/google.service';
+import { GoogleDriveService } from 'src/providers/google-drive/google-drive.service';
 import { ProvidersService } from 'src/providers/providers.service';
 
 @Controller('webhook/google')
@@ -10,9 +9,8 @@ export class GoogleWebhookController {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly googleService: GoogleService,
+    private readonly googleService: GoogleDriveService,
     private readonly providerService: ProvidersService,
-    private readonly fileService: FilesService,
   ) { }
 
   @Post()

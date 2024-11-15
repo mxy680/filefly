@@ -1,16 +1,14 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+// src/providers/google-drive/google-drive.prisma.service.ts
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
-import { GoogleDriveFile } from 'src/types/files';
-import { GoogleDriveFile as PrismaGoogleDriveFile } from '@prisma/client';
+import { GoogleDriveFile } from './google-drive.types';
 
 @Injectable()
-export class FilesService {
-    constructor(
-        private readonly prismaService: PrismaService,
-    ) { }
+export class GoogleDrivePrismaService {
+    constructor(private readonly prisma: PrismaService) { }
 
     async createFile(userId: number, file: GoogleDriveFile) {
-        await this.prismaService.googleDriveFile.create({
+        await this.prisma.googleDriveFile.create({
             data: {
                 userId,
                 id: file.id,
@@ -30,7 +28,7 @@ export class FilesService {
     }
 
     async upsertFile(userId: number, file: GoogleDriveFile) {
-        await this.prismaService.googleDriveFile.upsert({
+        await this.prisma.googleDriveFile.upsert({
             where: { id: file.id },
             update: {
                 name: file.name,
@@ -63,25 +61,25 @@ export class FilesService {
         });
     }
 
-    async listFiles(userId: number): Promise<PrismaGoogleDriveFile[]> {
-        try {
-            const files = await this.prismaService.googleDriveFile.findMany({
-                where: { userId }
-            });
+    async deleteFile(userId: number, fileId: string) {
+        await this.prisma.googleDriveFile.deleteMany({
+            where: { userId, id: fileId }
+        });
+    }
 
-            return files || [];
-        } catch (error) {
-            console.error('Error retrieving files:', error.message);
-            throw new Error('Failed to retrieve Google Drive files');
-        }
+    async upsertWebhook(userId: number, channelId: string, resourceId: string, pageToken: string, accessToken: string, expiration: Date) {
+        await this.prisma.googleDriveWebhook.upsert({
+            where: { userId },
+            update: { channelId, resourceId, pageToken, accessToken, expiration },
+            create: { userId, channelId, resourceId, pageToken, accessToken, expiration }
+        });
     }
 
     async fileWithHashExists(userId: number, hash: string, hashMethod: 'sha1' | 'sha256' | 'md5'): Promise<boolean> {
-        const file = await this.prismaService.googleDriveFile.findFirst({
+        const file = await this.prisma.googleDriveFile.findFirst({
             where: { userId, [hashMethod]: hash }
         });
 
         return !!file;
     }
-        
 }

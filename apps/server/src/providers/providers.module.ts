@@ -1,19 +1,17 @@
-// src/providers/providers.module.ts
 import { Module, forwardRef } from '@nestjs/common';
 import { ProvidersService } from './providers.service';
-import { GoogleService } from './google/google.service';
+import { GoogleDriveService } from './google-drive/google-drive.service';
 import { AuthModule } from 'src/auth/auth.module';
-import { GoogleController } from './google/google.controller';
-import { FilesService } from 'src/files/files.service';
+import { GoogleController } from './google-drive/google-drive.controller';
 import { ProducerModule } from 'src/rabbitmq/producer/producer.module';
-import { InferenceModule } from 'src/inference/inference.module';
 import { WeaviateService } from 'src/weaviate/weaviate.service';
+import { GoogleDrivePrismaService } from './google-drive/google-drive.prisma.service';
 
 const providers = [
   ProvidersService,
-  FilesService,
-  GoogleService,
-  WeaviateService
+  GoogleDriveService,
+  GoogleDrivePrismaService,
+  WeaviateService,
 ];
 
 const controllers = [
@@ -21,7 +19,7 @@ const controllers = [
 ];
 
 @Module({
-  imports: [forwardRef(() => AuthModule), ProducerModule, InferenceModule], // Use forwardRef here
+  imports: [forwardRef(() => AuthModule), ProducerModule], // Use forwardRef here
   controllers,
   providers,
   exports: [...providers],

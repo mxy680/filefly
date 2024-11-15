@@ -6,9 +6,8 @@ import { ConsumerService } from './consumer.service';
 export class ConsumerController {
   constructor(private readonly consumerService: ConsumerService) {}
 
-  @MessagePattern('my_queue') // Match the queue name or routing key
-  async handleIncomingMessage(@Payload() message: any) {
-    console.log('Received message from RabbitMQ:', message);
-    this.consumerService.processMessage(message);
+  @MessagePattern('vectorization_queue')  // Matches the pattern used by the producer
+  async handleVectorizationTask(@Payload() task: { provider: string, data: any }): Promise<void> {
+    await this.consumerService.handleVectorizationTask(task.provider, task.data);
   }
 }
