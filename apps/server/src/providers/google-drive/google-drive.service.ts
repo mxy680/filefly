@@ -136,7 +136,6 @@ export class GoogleDriveService {
                         await this.fileService.upsertFile(userId, file as GoogleDriveFile);
 
                         // Vectorize file
-                        console.log('Sending vectorization task for file:', file?.name);
                         await this.producerService.sendVectorizationTask({
                             provider: 'google-drive',
                             data: { fileId: file?.id, userId, mimeType: file?.mimeType },

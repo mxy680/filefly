@@ -8,11 +8,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'VECTORIZATION_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
-          queue: 'vectorization_queue',
-          queueOptions: {
-            durable: true,
-          },
+          urls: ['amqp://localhost:5672'], // Replace with your RabbitMQ URL
+          queue: 'vectorization_queue',    // Ensure queue name matches
+          queueOptions: { durable: true },
         },
       },
     ]),
