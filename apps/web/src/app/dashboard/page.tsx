@@ -6,7 +6,6 @@ import { Button } from "@repo/ui/components/ui/button";
 
 const Dashboard = () => {
   const router = useRouter();
-  const [files, setFiles] = useState([]);
 
   const handleLogout = async () => {
     try {
@@ -17,25 +16,20 @@ const Dashboard = () => {
     }
   };
 
-  const listFiles = async () => {
+  const printChanges = async () => {
     try {
-      const response = await fetch("/api/google/files", { method: "GET" });
-      const files = await response.json();
-      setFiles(files);
+      const response = await fetch("/api/google/changes", { method: "GET" });
+      const changes = await response.json();
+      console.log(changes);
     } catch (error) {
-      console.error("Error listing files:", error);
+      console.error("Error listing changes:", error);
     }
-  };
+  }
 
   return (
     <div>
       <Button onClick={handleLogout}>Logout</Button>
-      <Button onClick={listFiles}>List Files</Button>
-      <ul>
-        {files.map((file: any) => (
-          <li key={file.id}>{file.name}</li>
-        ))}
-      </ul>
+      <Button onClick={printChanges}>Print Changes</Button>
     </div>
   );
 };

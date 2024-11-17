@@ -1,8 +1,9 @@
-import { Controller, Post, Req, Res, HttpStatus, Headers } from '@nestjs/common';
+import { Controller, Post, Req, Res, HttpStatus, Headers, Get } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDriveService } from 'src/providers/google-drive/google-drive.service';
 import { ProvidersService } from 'src/providers/providers.service';
+import { GoogleDriveWebhookService } from '../google-drive.webhook.service';
 
 @Controller('webhook/google')
 export class GoogleWebhookController {
@@ -11,6 +12,7 @@ export class GoogleWebhookController {
     private readonly prismaService: PrismaService,
     private readonly googleService: GoogleDriveService,
     private readonly providerService: ProvidersService,
+    private readonly googleWebhookService: GoogleDriveWebhookService,
   ) { }
 
   @Post()
@@ -22,9 +24,7 @@ export class GoogleWebhookController {
   ) {
     if (resourceState === 'change') {
       // Fetch the pageToken from the database
-      const watch = await this.prismaService.googleDriveWebhook.findUnique({
-        where: { resourceId },
-      });
+      const watch = await this.googleWebhookService.getWebhookByResource(resourceId);
 
       if (!watch) {
         console.error('Watch not found for resource ID:', resourceId);
@@ -43,10 +43,7 @@ export class GoogleWebhookController {
       await this.googleService.uploadChanges(changes, userId, accessToken);
 
       // Update the pageToken in the database for future changes
-      await this.prismaService.googleDriveWebhook.update({
-        where: { resourceId },
-        data: { pageToken: newPageToken },
-      });
+      await this.googleWebhookService.updateWebhookPageToken(resourceId, newPageToken);
     }
 
     // Acknowledge the webhook notification

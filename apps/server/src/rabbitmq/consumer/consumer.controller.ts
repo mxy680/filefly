@@ -8,8 +8,7 @@ export class ConsumerController {
   
 
   @MessagePattern('vectorization_queue')  // Matches the pattern used by the producer
-  async handleVectorizationTask(@Payload() task: { provider: string, data: any }): Promise<void> {
-    console.log('Received vectorization task:');
-    await this.consumerService.handleVectorizationTask(task.provider, task.data);
+  async handleVectorizationTask(@Payload() task: { provider: string, data: any, accessToken: string }): Promise<void> {
+    await this.consumerService.handleVectorizationTask(task.provider, task.data, task.accessToken);
   }
 }

@@ -58,7 +58,7 @@ model GoogleDriveWebhook {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
 
-  @@index([userId, expiration])
+  @@index([userId, accessToken])
 }
 
 model GoogleDriveFile {

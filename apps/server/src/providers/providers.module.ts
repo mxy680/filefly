@@ -6,9 +6,12 @@ import { GoogleController } from './google-drive/google-drive.controller';
 import { ProducerModule } from 'src/rabbitmq/producer/producer.module';
 import { WeaviateService } from 'src/weaviate/weaviate.service';
 import { GoogleDrivePrismaService } from './google-drive/google-drive.prisma.service';
+import { UsersService } from 'src/users/users.service';
+import { GoogleDriveWebhookService } from 'src/webhook/google-drive.webhook.service';
 
 const providers = [
   ProvidersService,
+  GoogleDriveWebhookService,
   GoogleDriveService,
   GoogleDrivePrismaService,
   WeaviateService,

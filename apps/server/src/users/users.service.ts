@@ -14,6 +14,13 @@ export class UsersService {
         }).then((result) => result?.userId);
     }
 
+    async findUserBySession(sessionId: number): Promise<number> {
+        return await this.prisma.session.findUnique({
+            where: { id: sessionId },
+            select: { userId: true }
+        }).then((result) => result?.userId);
+    }
+
     async createUser(): Promise<number> {
         return await this.prisma.user.create({
             data: {}

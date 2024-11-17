@@ -6,7 +6,7 @@ import { VectorizationService } from 'src/vectorization/vectorization.service';
 export class ConsumerService {
   constructor(private readonly vectorizationService: VectorizationService) { }
 
-  async handleVectorizationTask(provider: string, data: any): Promise<void> {
-    await this.vectorizationService.vectorize(provider, data);
+  async handleVectorizationTask(provider: string, data: any, accessToken: string): Promise<void> {
+    await this.vectorizationService.vectorize(provider, data, accessToken);
   }
 }

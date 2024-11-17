@@ -9,10 +9,10 @@ export class VectorizationService {
         private readonly googleDriveProcessor: GoogleDriveProcessor,
     ) { }
 
-    async vectorize(provider: string, file: any): Promise<void> {
+    async vectorize(provider: string, file: any, accessToken: string): Promise<void> {
         switch (provider) {
             case 'google-drive':
-                await this.googleDriveProcessor.process(file as GoogleDriveFileVectorizable);
+                await this.googleDriveProcessor.process(file as GoogleDriveFileVectorizable, accessToken);
                 break;
             default:
                 throw new Error('Unsupported provider');

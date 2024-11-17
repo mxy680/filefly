@@ -3,7 +3,7 @@ import { serverRequest } from '@/src/utils/serverRequest';
 
 export async function GET(req: NextRequest) {
     try {
-        const response = await serverRequest('get', '/google/files', req);
+        const response = await serverRequest('get', '/google/changes', req);
         return NextResponse.json(response.data, { status: 200 });
     } 
     catch (error: any) {

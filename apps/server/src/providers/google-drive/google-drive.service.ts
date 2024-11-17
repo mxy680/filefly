@@ -15,7 +15,7 @@ export class GoogleDriveService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly fileService: GoogleDrivePrismaService,
-        private readonly producerService: ProducerService
+        private readonly producerService: ProducerService,
     ) { }
 
     getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
@@ -116,8 +116,6 @@ export class GoogleDriveService {
             return;
         }
 
-        const { drive } = this.getDrive(accessToken);
-
         await Promise.all(changes.map(async (change) => {
             const { file, removed, changeType } = change;
 
@@ -135,10 +133,14 @@ export class GoogleDriveService {
                         // File is new or updated.
                         await this.fileService.upsertFile(userId, file as GoogleDriveFile);
 
+                        console.log('File:', file?.mimeType);
+                        return;
+
                         // Vectorize file
                         await this.producerService.sendVectorizationTask({
                             provider: 'google-drive',
                             data: { fileId: file?.id, userId, mimeType: file?.mimeType },
+                            accessToken,
                         });
                     }
                 }

@@ -57,11 +57,4 @@ export class WeaviateService implements OnModuleInit {
         }
 
     }
-
-    async queryText(collectionName: string, query: string, limit = 3) {
-        const collection = await this.getCollection(collectionName);
-        return await collection.query.nearText(query, {
-            limit,
-        });
-    }
 }
