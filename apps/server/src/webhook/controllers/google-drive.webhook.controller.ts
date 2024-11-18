@@ -1,6 +1,5 @@
 import { Controller, Post, Req, Res, HttpStatus, Headers, Get } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDriveService } from 'src/providers/google-drive/google-drive.service';
 import { ProvidersService } from 'src/providers/providers.service';
 import { GoogleDriveWebhookService } from '../google-drive.webhook.service';
@@ -9,7 +8,6 @@ import { GoogleDriveWebhookService } from '../google-drive.webhook.service';
 export class GoogleWebhookController {
 
   constructor(
-    private readonly prismaService: PrismaService,
     private readonly googleService: GoogleDriveService,
     private readonly providerService: ProvidersService,
     private readonly googleWebhookService: GoogleDriveWebhookService,

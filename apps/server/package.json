@@ -43,9 +43,12 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.8.69",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "sharp": "^0.33.5",
     "tesseract.js": "^5.1.1",
     "uuid": "^11.0.2",
     "weaviate-client": "^3.2.3"

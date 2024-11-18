@@ -67,11 +67,12 @@ export class GoogleDriveService {
 
             const response = await drive.changes.watch({
                 pageToken,
+                supportsAllDrives: true,
                 requestBody: {
                     id: channelId,
                     type: 'web_hook',
                     address: `${process.env.NGROK_URL}/webhook/google`,
-                    expiration: expiration.getTime().toString()
+                    expiration: expiration.getTime().toString(),
                 }
             });
 
@@ -128,14 +129,11 @@ export class GoogleDriveService {
                 }
                 else {
                     // Check if file hash exists 
+                    console.log('Created File:', file?.name, file?.mimeType);
+                    await this.fileService.upsertFile(userId, file as GoogleDriveFile);
+
                     const fileHashExists = await this.fileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
-                    if (!fileHashExists) {
-                        // File is new or updated.
-                        await this.fileService.upsertFile(userId, file as GoogleDriveFile);
-
-                        console.log('File:', file?.mimeType);
-                        return;
-
+                    if (!fileHashExists || true) {
                         // Vectorize file
                         await this.producerService.sendVectorizationTask({
                             provider: 'google-drive',

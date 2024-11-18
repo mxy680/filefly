@@ -17,7 +17,7 @@ export class GoogleController {
         @Req() req: Request,
         @Res() res: Response,
     ) {
-        const { accessToken, userId } = req.user as { accessToken: string, userId: number };
+        const { userId } = req.user as { userId: number };
 
         // Get the webhook
         const webhook = await this.googleWebhookService.getWebhookByUser(userId);
@@ -35,7 +35,8 @@ export class GoogleController {
         // Update the pageToken in the database for future changes
         await this.googleWebhookService.updateWebhookPageToken(webhook.resourceId, newPageToken);
 
-        console.log('Changes:', changes);
+        // Upload and index the changes to the database
+        await this.googleService.uploadChanges(changes, userId, googleAccessToken);
 
         return res.status(HttpStatus.OK).json(changes);
     }
