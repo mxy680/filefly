@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { VectorizationService } from './vectorization.service';
 import { WeaviateModule } from 'src/weaviate/weaviate.module';
+import { ProducerModule } from 'src/rabbitmq/producer/producer.module';
 
 // Providers
 import { GoogleDriveProvider } from './providers/google-drive.provider';
@@ -24,7 +25,7 @@ const processors = [
 ]
 
 @Module({
-  imports: [WeaviateModule],
+  imports: [WeaviateModule, ProducerModule],
   providers: [VectorizationService, ...providers, ...loaders, ...processors],
   exports: [VectorizationService]
 })

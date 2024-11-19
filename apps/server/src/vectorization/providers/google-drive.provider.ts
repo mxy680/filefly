@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { GoogleDriveFileVectorizable } from '../types/google-drive.types';
-
-import { extractTextFromImage, extractTextFromPdf } from '../utils/ocr';
+import { GoogleDriveFileVectorizable } from 'src/types/google-drive.types';
 
 import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import * as pdfParse from 'pdf-parse';
-import { WeaviateService } from 'src/weaviate/weaviate.service';
 import { GoogleDriveLoaderService } from '../loaders/google-drive.loader';
 
-import { GOOGLE_DRIVE_DOCUMENT_MIME_TYPES } from '../types/google-drive.types';
+import { GOOGLE_DRIVE_DOCUMENT_MIME_TYPES } from 'src/types/google-drive.types';
 
 import { DocumentProcessor } from '../processors/document.processor';
 

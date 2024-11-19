@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GoogleDriveFileVectorizable } from './types/google-drive.types';
+import { GoogleDriveFileVectorizable } from 'src/types/google-drive.types';
 
 import { GoogleDriveProvider } from 'src/vectorization/providers/google-drive.provider';
 

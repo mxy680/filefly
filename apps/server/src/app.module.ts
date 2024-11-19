@@ -9,6 +9,7 @@ import { ProducerModule } from './rabbitmq/producer/producer.module';
 import { ConsumerModule } from './rabbitmq/consumer/consumer.module';
 import { WeaviateModule } from './weaviate/weaviate.module';
 import { VectorizationModule } from './vectorization/vectorization.module';
+import { ExtractionModule } from './extraction/extraction.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { VectorizationModule } from './vectorization/vectorization.module';
     ConsumerModule,
     WeaviateModule,
     VectorizationModule,
+    ExtractionModule,
   ],
   
   providers: [PrismaService],
