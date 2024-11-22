@@ -5,11 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './database/prisma.service';
 import { ProvidersModule } from './providers/providers.module';
 import { WebhookModule } from './webhook/webhook.module';
-import { ProducerModule } from './rabbitmq/producer/producer.module';
-import { ConsumerModule } from './rabbitmq/consumer/consumer.module';
-import { WeaviateModule } from './weaviate/weaviate.module';
-import { VectorizationModule } from './vectorization/vectorization.module';
-import { ExtractionModule } from './extraction/extraction.module';
+import { ProducerModule } from './producer/producer.module';
 
 @Module({
   imports: [
@@ -21,13 +17,8 @@ import { ExtractionModule } from './extraction/extraction.module';
     }),
     ProvidersModule,
     WebhookModule,
-    ProducerModule,
-    ConsumerModule,
-    WeaviateModule,
-    VectorizationModule,
-    ExtractionModule,
+    ProducerModule
   ],
-  
   providers: [PrismaService],
 })
 export class AppModule { }

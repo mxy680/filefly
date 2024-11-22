@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDrivePrismaService } from './google-drive.prisma.service';
-import { ProducerService } from 'src/rabbitmq/producer/producer.service';
 
 import { GoogleDriveFile } from './google-drive.types';
 
@@ -15,7 +14,6 @@ export class GoogleDriveService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly fileService: GoogleDrivePrismaService,
-        private readonly producerService: ProducerService,
     ) { }
 
     getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
@@ -134,12 +132,7 @@ export class GoogleDriveService {
 
                     const fileHashExists = await this.fileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
                     if (!fileHashExists || true) {
-                        // Vectorize file
-                        await this.producerService.sendVectorizationTask({
-                            provider: 'google-drive',
-                            data: { fileId: file?.id, userId, mimeType: file?.mimeType },
-                            accessToken,
-                        });
+                        // EXTRACT AND VECTORIZE
                     }
                 }
             }

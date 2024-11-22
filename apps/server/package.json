@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@golevelup/nestjs-rabbitmq": "^5.6.1",
     "@nestjs/axios": "^3.1.1",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
@@ -30,6 +31,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^5.21.1",
+    "adm-zip": "^0.5.16",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.4",
     "axios": "^1.7.7",
@@ -37,6 +39,7 @@
     "google-auth-library": "^9.14.2",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.8.0",
     "passport": "^0.7.0",
     "passport-dropbox-oauth2": "^1.1.0",
     "passport-github2": "^0.1.12",
@@ -50,8 +53,10 @@
     "rxjs": "^7.8.1",
     "sharp": "^0.33.5",
     "tesseract.js": "^5.1.1",
+    "textract": "^2.5.0",
     "uuid": "^11.0.2",
-    "weaviate-client": "^3.2.3"
+    "weaviate-client": "^3.2.3",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
