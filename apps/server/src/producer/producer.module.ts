@@ -11,7 +11,7 @@ import { ProducerService } from './producer.service';
           type: 'direct',
         },
       ],
-      uri: 'amqp://user:password@localhost:5672', // Replace with your RabbitMQ connection string
+      uri: 'amqp://guest:guest@localhost:5672', // Replace with your RabbitMQ connection string
       connectionInitOptions: { wait: false },
     }),
   ],
