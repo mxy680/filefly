@@ -16,8 +16,12 @@
       "dependsOn": ["rabbitmq#start"],
       "cache": false
     },
+    "api#dev": {
+      "cache": false,
+      "outputs": []
+    },
     "dev": {
-      "dependsOn": ["web#dev", "server#start"]
+      "dependsOn": ["web#dev", "server#start", "api#dev"]
     }
   }
 }
