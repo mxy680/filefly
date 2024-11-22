@@ -1,18 +1,23 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "ui": "tui",
   "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+    "rabbitmq#start": {
+      "cache": false,
+      "outputs": []
     },
-    "lint": {
-      "dependsOn": ["^lint"]
+    "rabbitmq#stop": {
+      "cache": false,
+      "outputs": []
+    },
+    "web#dev": {
+      "dependsOn": ["rabbitmq#start"],
+      "cache": false
+    },
+    "server#start": {
+      "dependsOn": ["rabbitmq#start"],
+      "cache": false
     },
     "dev": {
-      "cache": false,
-      "persistent": true
+      "dependsOn": ["web#dev", "server#start"]
     }
   }
 }
