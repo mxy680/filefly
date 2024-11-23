@@ -8,12 +8,14 @@ import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDrivePrismaService } from './google-drive.prisma.service';
 
 import { GoogleDriveFile } from './google-drive.types';
+import { ProducerService } from 'src/producer/producer.service';
 
 @Injectable()
 export class GoogleDriveService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly fileService: GoogleDrivePrismaService,
+        private readonly producerService: ProducerService
     ) { }
 
     getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
@@ -132,7 +134,14 @@ export class GoogleDriveService {
 
                     const fileHashExists = await this.fileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
                     if (!fileHashExists || true) {
-                        // EXTRACT AND VECTORIZE
+                        // Extraction
+                        const content = await this.producerService.sendExtractionTask({
+                            provider: 'google-drive',
+                            data: { fileId: file?.id },
+                            accessToken,
+                        });
+
+                        console.log(content);
                     }
                 }
             }

@@ -19,14 +19,15 @@ export class ProducerService {
     }
   }
 
-  async sendExtractionTask(task: { file: Buffer; mimeType: string }): Promise<{ text: string; images: Buffer[] }> {
+  async sendExtractionTask(task: { provider: string; data: any; accessToken: string }): Promise<{ text: string; images: Buffer[] }> {
     try {
       const response = await this.amqpConnection.request<{ text: string; images: Buffer[] }>({
         exchange: 'processing-exchange',
         routingKey: 'extraction-task',
         payload: {
-          file: task.file.toString('base64'), // Convert the file buffer to a string for transmission
-          mimeType: task.mimeType,
+          provider: task.provider,
+          data: task.data,
+          accessToken: task.accessToken,
         },
         timeout: 10000, // Timeout in milliseconds for the response
       });

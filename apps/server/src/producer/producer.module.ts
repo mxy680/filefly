@@ -5,14 +5,7 @@ import { ProducerService } from './producer.service';
 @Module({
   imports: [
     RabbitMQModule.forRoot(RabbitMQModule, {
-      exchanges: [
-        {
-          name: 'ocr-exchange',
-          type: 'direct',
-        },
-      ],
-      uri: 'amqp://guest:guest@localhost:5672', // Replace with your RabbitMQ connection string
-      connectionInitOptions: { wait: false },
+      uri: 'amqp://guest:guest@localhost:5672',
     }),
   ],
   providers: [ProducerService],
