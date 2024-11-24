@@ -1,6 +1,12 @@
 def handle_extraction_task(task):
-    file = task.get("file")
-    mime_type = task.get("mimeType")
-    # Process the file and extract data
-    print(f"Processing extraction task with file: {file}, mime type: {mime_type}")
+    fileId = task.get("fileId")
+    provider = task.get("provider")
+    accessToken = task.get("accessToken")
+    
     # Add extraction logic here
+    return {
+        "fileId": fileId,
+        "provider": provider,
+        "accessToken": accessToken,
+        "status": "success"
+    }

@@ -14,8 +14,8 @@ import { ProducerService } from 'src/producer/producer.service';
 export class GoogleDriveService {
     constructor(
         private readonly prismaService: PrismaService,
-        private readonly fileService: GoogleDrivePrismaService,
-        private readonly producerService: ProducerService
+        private readonly prismaFileService: GoogleDrivePrismaService,
+        private readonly producerService: ProducerService,
     ) { }
 
     getDrive(accessToken: string): { drive: drive_v3.Drive; client: OAuth2Client } {
@@ -41,7 +41,7 @@ export class GoogleDriveService {
                     fields: '*',
                 });
 
-                await this.fileService.createFile(userId, file.data as GoogleDriveFile);
+                await this.prismaFileService.createFile(userId, file.data as GoogleDriveFile);
             }));
 
 
@@ -83,7 +83,7 @@ export class GoogleDriveService {
             }
 
             // Upsert the webhook in the database
-            await this.fileService.upsertWebhook(userId, channelId, resourceId, pageToken, accessToken, expiration);
+            await this.prismaFileService.upsertWebhook(userId, channelId, resourceId, pageToken, accessToken, expiration);
 
         } catch (error) {
             console.error('Error starting Google Drive watch:', error);
@@ -117,6 +117,8 @@ export class GoogleDriveService {
             return;
         }
 
+        const { drive } = this.getDrive(accessToken);
+
         await Promise.all(changes.map(async (change) => {
             const { file, removed, changeType } = change;
 
@@ -125,24 +127,25 @@ export class GoogleDriveService {
                 if (removed || file?.trashed) {
                     // File is permanently deleted or access was revoked
                     console.log('Deleting file:', file?.name);
-                    await this.fileService.deleteFile(userId, file?.id);
+                    await this.prismaFileService.deleteFile(userId, file?.id);
                 }
                 else {
-                    // Check if file hash exists 
-                    console.log('Created File:', file?.name, file?.mimeType);
-                    await this.fileService.upsertFile(userId, file as GoogleDriveFile);
+                    const fileHashExists = await this.prismaFileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
+                    if (!fileHashExists) {
+                        console.log('Processing File:', file?.name);
 
-                    const fileHashExists = await this.fileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
-                    if (!fileHashExists || true) {
-                        // Extraction
+                        // Extract file contents
                         const content = await this.producerService.sendExtractionTask({
-                            provider: 'google-drive',
-                            data: { fileId: file?.id },
+                            provider: 'google',
+                            fileId: file?.id as string,
                             accessToken,
                         });
 
-                        console.log(content);
+                        console.log('Extracted content:', content);
                     }
+
+                    // Upsert the file in the database
+                    await this.prismaFileService.upsertFile(userId, file as GoogleDriveFile);
                 }
             }
         }));
