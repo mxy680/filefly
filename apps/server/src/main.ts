@@ -20,22 +20,6 @@ async function bootstrap() {
   // Start the main HTTP application
   await app.listen(4000);
   console.log('HTTP server running on http://localhost:4000');
-
-  // Create a RabbitMQ microservice
-  const microservice = app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: ['amqp://localhost:5672'], // RabbitMQ connection URL
-      queue: 'vectorization_queue', // Name of the queue to listen to
-      queueOptions: {
-        durable: true, // Make the queue persistent
-      },
-    },
-  });
-
-  // Start the RabbitMQ microservice
-  await app.startAllMicroservices();
-  console.log('RabbitMQ microservice is listening');
 }
 
 bootstrap();

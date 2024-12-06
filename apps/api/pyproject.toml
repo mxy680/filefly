@@ -24,6 +24,7 @@ python-docx = "^1.1.2"
 pymupdf = "^1.25.0"
 odf = "^0.0.1"
 odfpy = "^1.4.1"
+weaviate = "^0.1.2"
 
 
 [build-system]

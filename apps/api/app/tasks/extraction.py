@@ -1,5 +1,6 @@
 from app.loaders.google import load_drive as load_google_drive, load_file as load_google_file
 from app.processors.document import *
+import time
 
 def handle_extraction_task(task: dict) -> tuple[str, list[bytes]]:
     """
@@ -29,6 +30,7 @@ def handle_extraction_task(task: dict) -> tuple[str, list[bytes]]:
     if not buffer:
         raise ValueError("Failed to load file")
         
+    start_time: float = time.time()
     images: list[bytes] = []
     text: str = ""
     match mimeType:
@@ -56,4 +58,5 @@ def handle_extraction_task(task: dict) -> tuple[str, list[bytes]]:
         case _:
             raise ValueError("MIME type is not supported")
         
+    print(f"Extraction time: {time.time() - start_time:.2f} seconds")
     return text, images

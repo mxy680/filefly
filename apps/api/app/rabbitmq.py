@@ -2,10 +2,13 @@ import pika
 import asyncio
 import json
 from app.tasks.extraction import handle_extraction_task
+from app.tasks.vectorization import handle_vectorization_task
+
 
 async def start_rabbitmq_consumer():
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, rabbitmq_consumer)
+
 
 def rabbitmq_consumer():
     # Connect to RabbitMQ
@@ -37,9 +40,11 @@ def rabbitmq_consumer():
         # Handle Content Extraction
         text, images = handle_extraction_task(task)
         
+        print("Text: ", len(text))
+        print("Images: ", len(images))
+        
         # Perform vectorization
-        # TODO: Implement vectorization logic here
-        result = {}
+        result = handle_vectorization_task(task, text, images)
         
         # Send response back to producer
         if properties.reply_to:

@@ -1994,7 +1994,18 @@ h11 = ">=0.8"
 [package.extras]
 standard = ["colorama (>=0.4)", "httptools (>=0.6.3)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "watchfiles (>=0.13)", "websockets (>=10.4)"]
 
+[[package]]
+name = "weaviate"
+version = "0.1.2"
+description = "A placeholder package for the Weaviate name"
+optional = false
+python-versions = "*"
+files = [
+    {file = "weaviate-0.1.2-py3-none-any.whl", hash = "sha256:40f1c1cf0b769036315d2b6026c8cd823a3a6e951c90d4e70a001a770ba8a444"},
+    {file = "weaviate-0.1.2.tar.gz", hash = "sha256:a381b8bb0eb236bd10256def8612953ed9024e6738b8a259e7ec11e626ae0665"},
+]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "be1242bdf1b88ea038d2ae80f146fd32fddacef6a9ca8c128f2d59c185d43f42"
+content-hash = "d26d712b3a20e416b487b11de10f2ca08195c0f0199051b8be1dbd31ed4f68d2"
