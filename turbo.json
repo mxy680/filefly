@@ -10,17 +10,25 @@
       "cache": false,
       "outputs": []
     },
+    "weaviate#start": {
+      "cache": false,
+      "outputs": []
+    },
+    "weaviate#stop": {
+      "cache": false,
+      "outputs": []
+    },
     "web#dev": {
-      "dependsOn": ["rabbitmq#start"],
+      "dependsOn": ["rabbitmq#start", "weaviate#start"],
       "cache": false
     },
     "server#start": {
-      "dependsOn": ["rabbitmq#start"],
+      "dependsOn": ["rabbitmq#start", "weaviate#start"],
       "cache": false
     },
     "api#dev": {
-      "cache": false,
-      "outputs": []
+      "dependsOn": ["rabbitmq#start", "weaviate#start"],
+      "cache": false
     },
     "dev": {
       "dependsOn": ["web#dev", "server#start", "api#dev"]

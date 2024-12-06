@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  weaviate:
+    image: semitechnologies/weaviate:1.22.3
+    ports:
+      - "8080:8080"
+    environment:
+      QUERY_DEFAULTS_LIMIT: 20
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      DEFAULT_VECTORIZER_MODULE: "text2vec-openai" # Adjust if needed
+      OPENAI_APIKEY: "<your-openai-api-key>"       # Replace with your actual API key
+    volumes:
+      - weaviate-data:/var/lib/weaviate
+
+volumes:
+  weaviate-data:
