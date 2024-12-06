@@ -2,7 +2,6 @@ import pika
 import asyncio
 import json
 from app.tasks.extraction import handle_extraction_task
-from app.tasks.vectorization import handle_vectorization_task
 
 async def start_rabbitmq_consumer():
     loop = asyncio.get_event_loop()
@@ -21,23 +20,27 @@ def rabbitmq_consumer():
     )
 
     # Declare the queues
-    channel.queue_declare(queue='extraction-task', durable=True)
+    channel.queue_declare(queue='vectorization-task', durable=True)
 
     # Bind queues to the exchange with routing keys
     channel.queue_bind(
         exchange='processing-exchange',
-        queue='extraction-task',
-        routing_key='extraction-task'
+        queue='vectorization-task',
+        routing_key='vectorization-task'
     )
 
     # Define callback functions for each queue
-    def extraction_callback(ch, method, properties, body):
+    def vectorization_callback(ch, method, properties, body):
         task = json.loads(body)
-        print("Received extraction task:", task)
+        print("Received vectorization task:", task)
 
-        # Process the task
-        result = handle_extraction_task(task)
-
+        # Handle Content Extraction
+        text, images = handle_extraction_task(task)
+        
+        # Perform vectorization
+        # TODO: Implement vectorization logic here
+        result = {}
+        
         # Send response back to producer
         if properties.reply_to:
             response = json.dumps(result)
@@ -50,7 +53,7 @@ def rabbitmq_consumer():
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     # Bind queues to their respective callbacks
-    channel.basic_consume(queue='extraction-task', on_message_callback=extraction_callback)
+    channel.basic_consume(queue='vectorization-task', on_message_callback=vectorization_callback)
 
     print("RabbitMQ consumers are running...")
     channel.start_consuming()

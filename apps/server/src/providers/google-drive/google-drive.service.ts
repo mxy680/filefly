@@ -135,10 +135,11 @@ export class GoogleDriveService {
                         console.log('Processing File:', file?.name);
 
                         // Extract file contents
-                        const content = await this.producerService.sendExtractionTask({
+                        const content = await this.producerService.sendVectorizationTask({
                             provider: 'google',
                             fileId: file?.id as string,
                             accessToken,
+                            mimeType: file?.mimeType as string,
                         });
 
                         console.log('Extracted content:', content);
