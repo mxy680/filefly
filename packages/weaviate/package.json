@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-      "start": "docker-compose up -d",
+      "start": "./setup.sh && python init_schema.py",
       "stop": "docker-compose down"
     },
     "dependencies": {}
