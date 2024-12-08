@@ -1,22 +1,25 @@
 {
-    "classes": [
-      {
-        "class": "Document",
-        "description": "A collection for storing document text and metadata",
-        "properties": [
-          { "name": "content", "dataType": ["text"], "description": "The text content of the document" },
-          { "name": "category", "dataType": ["string"], "description": "The category of the document" },
-          { "name": "timestamp", "dataType": ["date"], "description": "The timestamp when the document was created" }
-        ]
-      },
-      {
-        "class": "Image",
-        "description": "A collection for storing image metadata and embeddings",
-        "properties": [
-          { "name": "imageData", "dataType": ["blob"], "description": "Base64-encoded image data" },
-          { "name": "embedding", "dataType": ["number[]"], "description": "The embedding vector for the image" }
-        ]
-      }
-    ]
-  }
-  
+  "collections": [
+    {
+      "name": "Document",
+      "description": "A collection for storing document text and metadata",
+      "properties": [
+        {
+          "name": "content",
+          "dataType": ["text"],
+          "description": "Text content"
+        },
+        {
+          "name": "category",
+          "dataType": ["string"],
+          "description": "Document category"
+        },
+        {
+          "name": "timestamp",
+          "dataType": ["date"],
+          "description": "Creation timestamp"
+        }
+      ]
+    }
+  ]
+}

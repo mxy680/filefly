@@ -1,6 +1,6 @@
 import weaviate
 import os
-import json    
+from schemas import document_schema
 
 WEAVIATE_URL = os.getenv("WEAVIATE_URL", "http://localhost:8080")
 
@@ -11,22 +11,14 @@ def init_schema():
     """
     client = weaviate.connect_to_local()
     
-    # Load the schema
-    with open("schema.json", "r") as file:
-        schema = json.load(file)
-
-    # # Create classes in Weaviate
-    # for class_def in schema["classes"]:
-    #     # Check if class already exists
-    #     if client.schema.contains_class(class_def["class"]):
-    #         print(f"Class '{class_def['class']}' already")
-    #         continue    
-        
-    #     print(f"Creating class: {class_def['class']}")
-    #     try:
-    #         client.schema.create_class(class_def)
-    #     except weaviate.exceptions.WeaviateStartUpError as e:
-    #         print(f"Error creating class '{class_def['class']}': {e}")
+    # Create collections
+    client.collections.create(
+        name=document_schema["name"],
+        vectorizer_config=document_schema["vectorizer"],
+        properties=document_schema["properties"]
+    )
+    
+    client.close()
 
 
 if __name__ == "__main__":
