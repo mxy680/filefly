@@ -51,7 +51,7 @@
       "cache": false
     },
     "dev": {
-      "dependsOn": ["web#dev", "server#dev", "api#dev", "reset"]
+      "dependsOn": ["web#dev", "server#dev", "api#dev"]
     },
     "stop": {
       "dependsOn": ["rabbitmq#stop", "weaviate#stop"],
