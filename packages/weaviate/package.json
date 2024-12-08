@@ -1,11 +1,11 @@
 {
-    "name": "weaviate",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-      "start": "./setup.sh && python init_schema.py",
-      "stop": "docker-compose down"
-    },
-    "dependencies": {}
-  }
-  
+  "name": "weaviate",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "./start.sh",
+    "stop": "docker-compose down",
+    "reset": "docker-compose down -v"
+  },
+  "dependencies": {}
+}

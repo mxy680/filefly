@@ -10,6 +10,10 @@
       "cache": false,
       "outputs": []
     },
+    "rabbitmq#reset": {
+      "cache": false,
+      "outputs": []
+    },
     "weaviate#start": {
       "cache": false,
       "outputs": []
@@ -18,20 +22,44 @@
       "cache": false,
       "outputs": []
     },
-    "web#dev": {
-      "dependsOn": ["rabbitmq#start", "weaviate#start"],
+    "weaviate#reset": {
+      "cache": false,
+      "outputs": []
+    },
+    "prisma#generate": {
+      "cache": false,
+      "outputs": ["packages/prisma/generated/**"]
+    },
+    "prisma#migrate:dev": {
+      "dependsOn": ["prisma#generate"],
       "cache": false
     },
-    "server#start": {
-      "dependsOn": ["rabbitmq#start", "weaviate#start"],
+    "prisma#reset": {
+      "cache": false,
+      "outputs": []
+    },
+    "web#dev": {
+      "dependsOn": ["rabbitmq#start", "weaviate#start", "prisma#generate"],
+      "cache": false
+    },
+    "server#dev": {
+      "dependsOn": ["rabbitmq#start", "weaviate#start", "prisma#generate"],
       "cache": false
     },
     "api#dev": {
-      "dependsOn": ["rabbitmq#start", "weaviate#start"],
+      "dependsOn": ["rabbitmq#start", "weaviate#start", "prisma#generate"],
       "cache": false
     },
     "dev": {
-      "dependsOn": ["web#dev", "server#start", "api#dev"]
+      "dependsOn": ["web#dev", "server#dev", "api#dev", "reset"]
+    },
+    "stop": {
+      "dependsOn": ["rabbitmq#stop", "weaviate#stop"],
+      "cache": false
+    },
+    "reset": {
+      "dependsOn": ["rabbitmq#stop", "weaviate#stop", "prisma#reset"],
+      "cache": false
     }
   }
 }

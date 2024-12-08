@@ -1,0 +1,14 @@
+{
+  "name": "prisma",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "migrate:dev": "prisma migrate dev --schema=./prisma/schema.prisma --name create-db",
+    "generate": "prisma generate --schema=./prisma/schema.prisma",
+    "reset": "pnpx prisma migrate reset --schema=./prisma/schema.prisma --force --skip-seed"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.0.0",
+    "prisma": "^4.0.0"
+  }
+}
