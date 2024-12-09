@@ -21,11 +21,6 @@ schemas = [
                 description="The main text content of the document.",
             ),
             Property(
-                name="timestamp",
-                data_type=DataType.DATE,
-                description="The timestamp when the document was created",
-            ),
-            Property(
                 name="metadata",
                 data_type=DataType.TEXT,
                 description="Additional metadata about the document.",

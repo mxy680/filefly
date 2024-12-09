@@ -1,7 +1,6 @@
 import pika
 import asyncio
 import json
-from app.tasks.extraction import handle_extraction_task
 from app.tasks.vectorization import handle_vectorization_task
 
 
@@ -35,25 +34,15 @@ def rabbitmq_consumer():
     # Define callback functions for each queue
     def vectorization_callback(ch, method, properties, body):
         task = json.loads(body)
-        print("Received vectorization task:", task)
-
-        # Handle Content Extraction
-        text, images = handle_extraction_task(task)
-        
-        print("Text: ", len(text))
-        print("Images: ", len(images))
-        
-        # Perform vectorization
-        result = handle_vectorization_task(task, text, images)
+        handle_vectorization_task(task)
         
         # Send response back to producer
         if properties.reply_to:
-            response = json.dumps(result)
             ch.basic_publish(
                 exchange='',
                 routing_key=properties.reply_to,
                 properties=pika.BasicProperties(correlation_id=properties.correlation_id),
-                body=response
+                body=json.dumps({"status": "success"})
             )
         ch.basic_ack(delivery_tag=method.delivery_tag)
 

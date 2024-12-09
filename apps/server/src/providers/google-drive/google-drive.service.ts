@@ -140,6 +140,10 @@ export class GoogleDriveService {
                             fileId: file?.id as string,
                             accessToken,
                             mimeType: file?.mimeType as string,
+                            metaData: {
+                                size: file?.size as unknown as number,
+                                modifiedTime: file?.modifiedTime as string,
+                            }
                         });
                     }
 
