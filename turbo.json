@@ -38,16 +38,39 @@
       "cache": false,
       "outputs": []
     },
+    "ocr#start": {
+      "cache": false,
+      "outputs": []
+    },
+    "ocr#stop": {
+      "cache": false,
+      "outputs": []
+    },
     "web#dev": {
-      "dependsOn": ["rabbitmq#start", "weaviate#start", "prisma#generate"],
+      "dependsOn": [
+        "rabbitmq#start",
+        "weaviate#start",
+        "prisma#generate",
+        "ocr#start"
+      ],
       "cache": false
     },
     "server#dev": {
-      "dependsOn": ["rabbitmq#start", "weaviate#start", "prisma#generate"],
+      "dependsOn": [
+        "rabbitmq#start",
+        "weaviate#start",
+        "prisma#generate",
+        "ocr#start"
+      ],
       "cache": false
     },
     "api#dev": {
-      "dependsOn": ["rabbitmq#start", "weaviate#start", "prisma#generate"],
+      "dependsOn": [
+        "rabbitmq#start",
+        "weaviate#start",
+        "prisma#generate",
+        "ocr#start"
+      ],
       "cache": false
     },
     "dev": {

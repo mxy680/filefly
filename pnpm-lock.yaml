@@ -292,6 +292,8 @@ importers:
         specifier: ^5.3.3
         version: 5.6.2
 
+  packages/ocr: {}
+
   packages/prisma:
     dependencies:
       '@prisma/client':
