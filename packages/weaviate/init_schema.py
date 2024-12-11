@@ -18,11 +18,12 @@ def init_schema():
 
     # Create collections
     for schema in schemas:
-        client.collections.create(
-            name=schema["name"],
-            vectorizer_config=[schema["vectorizer"]],
-            properties=schema["properties"],
-        )
+        if client.collections.get(schema["name"]) == None:
+            client.collections.create(
+                name=schema["name"],
+                vectorizer_config=[schema["vectorizer"]],
+                properties=schema["properties"],
+            )
 
 
 if __name__ == "__main__":
