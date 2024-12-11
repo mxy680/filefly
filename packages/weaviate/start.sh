@@ -11,7 +11,6 @@ START_TIME=$(date +%s)
 # Wait for Weaviate to be ready
 echo "Waiting for Weaviate to be ready..."
 while ! curl -s http://localhost:8080/v1/.well-known/ready > /dev/null; do
-  echo "Still waiting for Weaviate at $(date)..."
   sleep 2
   CURRENT_TIME=$(date +%s)
   ELAPSED_TIME=$((CURRENT_TIME - START_TIME))

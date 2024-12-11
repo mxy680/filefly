@@ -24,7 +24,7 @@ def init_schema():
                 vectorizer_config=[schema["vectorizer"]],
                 properties=schema["properties"],
             )
-
+            
 
 if __name__ == "__main__":
     print(f"Initializing schema from schema.json")
