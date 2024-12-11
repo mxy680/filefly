@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Wait for RabbitMQ to start
 sleep 10
 

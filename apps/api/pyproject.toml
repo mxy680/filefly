@@ -26,6 +26,7 @@ odf = "^0.0.1"
 odfpy = "^1.4.1"
 weaviate = "^0.1.2"
 python-dotenv = "^1.0.1"
+easyocr = "^1.7.2"
 
 
 [build-system]

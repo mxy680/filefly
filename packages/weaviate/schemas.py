@@ -165,7 +165,7 @@ schemas = [
                 description="The name of the code file.",
             ),
             Property(
-                name="codeSnippet",
+                name="content",
                 data_type=DataType.TEXT,
                 description="The source code snippet or file content.",
             ),
