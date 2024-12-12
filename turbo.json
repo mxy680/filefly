@@ -14,15 +14,15 @@
       "cache": false,
       "outputs": []
     },
-    "weaviate#start": {
+    "vector-db#start": {
       "cache": false,
       "outputs": []
     },
-    "weaviate#stop": {
+    "vector-db#stop": {
       "cache": false,
       "outputs": []
     },
-    "weaviate#reset": {
+    "vector-db#reset": {
       "cache": false,
       "outputs": []
     },
@@ -49,7 +49,7 @@
     "web#dev": {
       "dependsOn": [
         "rabbitmq#start",
-        "weaviate#start",
+        "vector-db#start",
         "prisma#generate",
         "ocr#start"
       ],
@@ -58,7 +58,7 @@
     "server#dev": {
       "dependsOn": [
         "rabbitmq#start",
-        "weaviate#start",
+        "vector-db#start",
         "prisma#generate",
         "ocr#start"
       ],
@@ -67,7 +67,7 @@
     "api#dev": {
       "dependsOn": [
         "rabbitmq#start",
-        "weaviate#start",
+        "vector-db#start",
         "prisma#generate",
         "ocr#start"
       ],
@@ -77,11 +77,11 @@
       "dependsOn": ["web#dev", "server#dev", "api#dev"]
     },
     "stop": {
-      "dependsOn": ["rabbitmq#stop", "weaviate#stop"],
+      "dependsOn": ["rabbitmq#stop", "vector-db#stop"],
       "cache": false
     },
     "reset": {
-      "dependsOn": ["rabbitmq#stop", "weaviate#stop", "prisma#reset"],
+      "dependsOn": ["rabbitmq#stop", "vector-db#stop", "prisma#reset"],
       "cache": false
     }
   }

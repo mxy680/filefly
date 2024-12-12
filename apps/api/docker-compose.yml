@@ -1,0 +1,14 @@
+version: "3.12"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - POETRY_VIRTUALENVS_CREATE=false
+    env_file:
+      - .env
