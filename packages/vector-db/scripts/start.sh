@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Start Weaviate Docker container
 echo "Starting Weaviate Docker container..."
 docker-compose up -d
@@ -23,11 +21,11 @@ done
 
 echo "Weaviate is ready!"
 
-# Initialize schema with the Python script
+# Run the schema initialization container
 echo "Initializing schema in Weaviate..."
-python init_schema.py
+docker build -t weaviate-schema-init .
+docker run --rm --network="host" weaviate-schema-init
 
-# Check for errors in schema initialization
 if [ $? -ne 0 ]; then
   echo "Failed to initialize schema in Weaviate."
   exit 1

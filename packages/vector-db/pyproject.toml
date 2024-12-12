@@ -6,8 +6,8 @@ authors = ["Mark Shteyn <markshteyn1@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.13"
-weaviate-client = "^4.9.6"
+python = "^3.12"
+weaviate-client = "^4.10.1"
 python-dotenv = "^1.0.1"
 
 
