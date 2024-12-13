@@ -12,6 +12,12 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true
 
 volumes:
   rabbitmq-data:

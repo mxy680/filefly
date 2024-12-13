@@ -11,43 +11,47 @@ async def start_rabbitmq_consumer():
 
 def rabbitmq_consumer():
     # Connect to RabbitMQ
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host="rabbitmq", port=5672)
+    )
     channel = connection.channel()
 
     # Declare the exchange
     channel.exchange_declare(
-        exchange='processing-exchange',
-        exchange_type='direct',
-        durable=True
+        exchange="processing-exchange", exchange_type="direct", durable=True
     )
 
     # Declare the queues
-    channel.queue_declare(queue='vectorization-task', durable=True)
+    channel.queue_declare(queue="vectorization-task", durable=True)
 
     # Bind queues to the exchange with routing keys
     channel.queue_bind(
-        exchange='processing-exchange',
-        queue='vectorization-task',
-        routing_key='vectorization-task'
+        exchange="processing-exchange",
+        queue="vectorization-task",
+        routing_key="vectorization-task",
     )
 
     # Define callback functions for each queue
     def vectorization_callback(ch, method, properties, body):
         task = json.loads(body)
         handle_vectorization_task(task)
-        
+
         # Send response back to producer
         if properties.reply_to:
             ch.basic_publish(
-                exchange='',
+                exchange="",
                 routing_key=properties.reply_to,
-                properties=pika.BasicProperties(correlation_id=properties.correlation_id),
-                body=json.dumps({"status": "success"})
+                properties=pika.BasicProperties(
+                    correlation_id=properties.correlation_id
+                ),
+                body=json.dumps({"status": "success"}),
             )
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     # Bind queues to their respective callbacks
-    channel.basic_consume(queue='vectorization-task', on_message_callback=vectorization_callback)
+    channel.basic_consume(
+        queue="vectorization-task", on_message_callback=vectorization_callback
+    )
 
     print("RabbitMQ consumers are running...")
     channel.start_consuming()

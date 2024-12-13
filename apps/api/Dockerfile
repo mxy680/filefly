@@ -24,8 +24,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
-RUN apt-get update && apt-get install -y curl && \
-    curl -sSL https://install.python-poetry.org | python3 - && \
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Add Poetry to PATH
@@ -34,15 +33,23 @@ ENV PATH="/root/.local/bin:$PATH"
 # Set working directory
 WORKDIR /app
 
-# Copy project files
+# Copy project dependency files
 COPY pyproject.toml poetry.lock* /app/
+
+# Install Python dependencies with Poetry
 RUN poetry config virtualenvs.create false && poetry install --no-root
 
-# Copy the app code
+# Copy application code
 COPY . /app/
+
+# Ensure correct permissions
+RUN chmod -R 755 /app
 
 # Expose the FastAPI port
 EXPOSE 8000
 
-# Start FastAPI
+# Debugging step: print installed packages
+RUN python -m pip list && poetry show --tree
+
+# Start FastAPI application
 CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
