@@ -49,7 +49,7 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
     mimeType = task.get("mimeType")
     fileName = task.get("fileName")
     metadata = task.get("metaData")
-    
+
     print("MimeType: ", mimeType)
 
     if metadata:
@@ -66,9 +66,14 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
         raise ValueError("Access token is empty or invalid")
 
     try:
+        # Establish the client connection to Weaviate
         client = weaviate.connect_to_local(
+            port=8080,
+            grpc_port=50051,
             headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")},
         )
+        
+        
     except Exception as e:
         raise ValueError(f"Failed to connect to Weaviate: {e}")
 

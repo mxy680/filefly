@@ -26,6 +26,8 @@ services:
       CLIP_INFERENCE_API: http://multi2vec-clip:8080 # Set the inference API endpoint
     env_file:
       - .env
+    networks:
+      - shared-network
 
   multi2vec-clip:
     # Set the name of the inference container
@@ -35,6 +37,12 @@ services:
     ports:
       - "8081:8080" # Map the container's port 8080 to host port 8081
     restart: unless-stopped
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true
 
 volumes:
   weaviate_data:

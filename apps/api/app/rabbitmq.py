@@ -12,7 +12,7 @@ async def start_rabbitmq_consumer():
 def rabbitmq_consumer():
     # Connect to RabbitMQ
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host="rabbitmq", port=5672)
+        pika.ConnectionParameters(host="localhost")
     )
     channel = connection.channel()
 
