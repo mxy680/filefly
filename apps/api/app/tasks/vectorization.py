@@ -2,9 +2,10 @@ from app.loaders.google import (
     load_drive as load_google_drive,
     load_file as load_google_file,
 )
-from app.db.insertion import insert
+from app.db.insertion import insert, insert_chunks
 from app.processors.document import *
 from app.processors.image import extract_image_text
+from app.utils.chunking import chunkify_text
 
 import weaviate
 import os
@@ -50,8 +51,6 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
     fileName = task.get("fileName")
     metadata = task.get("metaData")
 
-    print("MimeType: ", mimeType)
-
     if metadata:
         metadata = " ".join([f"{k}: {v}" for k, v in metadata.items()])
 
@@ -61,7 +60,7 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
         "provider": provider,
         "fileId": fileId,
     }
-
+    
     if not accessToken:  # Check if accessToken is empty or None
         raise ValueError("Access token is empty or invalid")
 
@@ -118,7 +117,15 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
             # Extract text and images from a PDF file
             text, images = extract_from_pdf(buffer)
             args["content"] = text
-            uuid = insert(client, "Document", args)
+            
+            # Chunkify the text and insert each chunk if necessary
+            chunks = chunkify_text(text)
+            
+            if len(chunks) > 1:
+                args["chunks"] = chunks
+                uuid = insert_chunks(client, "Document", args)
+            else:
+                uuid = insert(client, "Document", args)
 
             # Process each image recursively
             for idx, image_buffer in enumerate(images):
@@ -156,7 +163,6 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
             text = extract_image_text(buffer)
             args["content"] = text
             uuid = insert(client, "Image", args)
-            print(text)
 
         case _:
             raise ValueError("MIME type is not supported")
