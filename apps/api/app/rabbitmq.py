@@ -32,9 +32,9 @@ def rabbitmq_consumer():
     )
 
     # Define callback functions for each queue
-    def vectorization_callback(ch, method, properties, body):
+    async def vectorization_callback(ch, method, properties, body):
         task = json.loads(body)
-        handle_vectorization_task(task)
+        await handle_vectorization_task(task)
 
         # Send response back to producer
         if properties.reply_to:

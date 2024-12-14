@@ -36,7 +36,7 @@ class GeneralImageExtractor(ImageExtractor):
         # Call my ocr package (api) to extract text from image
         try:
             # Send the buffer to the OCR API
-            api_url = "http://localhost:8000/ocr"  # Replace with the actual API URL
+            api_url = "http://localhost:9000/ocr"  # Replace with the actual API URL
             files = {"file": ("image.png", io.BytesIO(buffer), "image/png")}
             response = requests.post(api_url, files=files)
 
@@ -46,7 +46,6 @@ class GeneralImageExtractor(ImageExtractor):
             # Parse and return the extracted text
             result = response.json()
             extracted_text = "\n".join(result.get("text", []))
-            print(f"Extracted text from image: {extracted_text}")
             return extracted_text
         except Exception as e:
             raise ValueError(f"Failed to extract text from image: {e}")

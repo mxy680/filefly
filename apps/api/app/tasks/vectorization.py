@@ -9,6 +9,7 @@ from app.processors.function_map import mime_processing_map
 import weaviate
 import os
 from dotenv import load_dotenv
+import base64
 
 load_dotenv()
 
@@ -35,7 +36,7 @@ def recursive_vectorization(task: dict, buffer: bytes, idx: int):
     )
 
 
-def handle_vectorization_task(task: dict, buffer: bytes = None):
+async def handle_vectorization_task(task: dict, buffer: bytes = None):
     """
     Handle the content extraction and vectorization.
 
@@ -49,7 +50,7 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
     mimeType = task.get("mimeType")
     fileName = task.get("fileName")
     metadata = task.get("metaData")
-    
+        
     if metadata:
         metadata = " ".join([f"{k}: {v}" for k, v in metadata.items()])
 
@@ -109,10 +110,10 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
         for idx, image_buffer in enumerate(images):
             recursive_vectorization(task, image_buffer, idx)
             
-    elif extractor.file_type == "image":
+    elif extractor.file_type == "Image":
         text = extractor.extract(buffer)
         args["content"] = text
-        args["imageData"] = buffer
+        args["imageData"] = base64.b64encode(buffer).decode("utf-8")
         insert(client, "Image", args)
     
     client.close()

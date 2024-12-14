@@ -26,12 +26,18 @@ async def startup_event():
 async def read_root():
     # call the vectorization task
     task = {
-        "fileName": "day1.pdf",
+        "fileName": "image.png",
         "provider": "google",
-        "accessToken": "ya29.a0ARW5m76kazeVcLjO4BhFWYNquKnskXPDBrrOcOlsPDKwyhvaYSiQhb6TALGmg97YRvxiN5Tq7Yq4VkwdJq1r6hHTx3DY0QlTiYWSxNq-I2hqDQXIBpAlueGnPDdzAVWKmdmdwNvU2cy0zr5w1ZPHPl8CfugcSiP5_fNO8UiAaCgYKAT4SARMSFQHGX2MikJfXmvduAXBugJowuoGWHA0175'",
-        "fileId": "1D7lQLJjIYUQQEvoQ3IDDay2AnjfNlJ6F",
+        "accessToken": "ya29.a0ARW5m74dgaHwFibFpkkQkXQ5oLDW-lwAOlnXboV1m6pmFVugIyzoEbaZ9e-Em0dcw2F0BqgthlVRg_uxc8gxXn5FHs9wykSFK0PJhtY9QcP1waGm4BFU84sICf26MYQN2qQ-xUjvNWHud4LEkOfCEOchv81MwlOcLKLVzom_aCgYKAVISARMSFQHGX2Mi1aoEd9dkvI5T1hBUI2QtJw0175",
+        "fileId": "16SMNfcezNUtoldU2m7EhtxIuqCBhG9yZ",
         "metadata": {'size': '712682', 'modifiedTime': '2024-10-08T01:38:46.000Z'},
-        "mimeType": "application/pdf",
+        "mimeType": "image/png",
     }
-    handle_vectorization_task(task)
-    return {"message": "Hello World"}
+            
+    try:
+        await handle_vectorization_task(task)
+        print("Task submitted for vectorization")
+        return {"message": "Task submitted for vectorization"}
+    except Exception as e:
+        print(f"Failed to submit task: {e}")
+        return {"error": str(e)}

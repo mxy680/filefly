@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "docker-compose up --build",
+    "start": "docker-compose up -d --build",
     "stop": "docker-compose down"
   },
   "dependencies": {}
