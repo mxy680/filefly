@@ -3,9 +3,8 @@ from app.loaders.google import (
     load_file as load_google_file,
 )
 from app.db.insertion import insert, insert_chunks
-from app.processors.document import *
-from app.processors.image import extract_image_text
 from app.utils.chunking import chunkify_text
+from app.processors.function_map import mime_processing_map
 
 import weaviate
 import os
@@ -50,7 +49,7 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
     mimeType = task.get("mimeType")
     fileName = task.get("fileName")
     metadata = task.get("metaData")
-
+    
     if metadata:
         metadata = " ".join([f"{k}: {v}" for k, v in metadata.items()])
 
@@ -86,85 +85,36 @@ def handle_vectorization_task(task: dict, buffer: bytes = None):
 
     if not buffer:
         raise ValueError("Failed to load file")
+ 
+ 
+    extractor = mime_processing_map.get(mimeType)
+    if not extractor:
+        raise ValueError("MIME type not supported")
+    
+    if extractor.file_type == "Document":
+        # Extract text and images from document
+        text, images = extractor.extract(buffer)
+        args["content"] = text
+        
+        # Chunkify the text and insert each chunk if necessary
+        chunks = chunkify_text(text)
+        
+        if len(chunks) > 1:
+            args["chunks"] = chunks
+            insert_chunks(client, extractor.file_type, args)
+        else:
+            insert(client, extractor.file_type, args)
 
-    match mimeType:
-        case "text/plain":
-            # Decode the buffer as plain text and insert
-            text = extract_text_plain(buffer)
-            args["content"] = text
-            uuid = insert(client, "Document", args)
-
-        case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            # Extract text and images from a DOCX file
-            text, images = extract_from_word(buffer)
-            args["content"] = text
-            uuid = insert(client, "Document", args)
-
-            # Process each image recursively
-            for idx, image_buffer in enumerate(images):
-                recursive_vectorization(task, image_buffer, idx)
-
-        case "application/msword":
-            # Extract text and images from a DOC file
-            text, images = extract_from_legacy_word(buffer)
-            args["content"] = text
-            uuid = insert(client, "Document", args)
-
-            for idx, image_buffer in enumerate(images):
-                recursive_vectorization(task, image_buffer, idx)
-
-        case "application/pdf":
-            # Extract text and images from a PDF file
-            text, images = extract_from_pdf(buffer)
-            args["content"] = text
+        # Process each image recursively
+        for idx, image_buffer in enumerate(images):
+            recursive_vectorization(task, image_buffer, idx)
             
-            # Chunkify the text and insert each chunk if necessary
-            chunks = chunkify_text(text)
-            
-            if len(chunks) > 1:
-                args["chunks"] = chunks
-                uuid = insert_chunks(client, "Document", args)
-            else:
-                uuid = insert(client, "Document", args)
-
-            # Process each image recursively
-            for idx, image_buffer in enumerate(images):
-                recursive_vectorization(task, image_buffer, idx)
-
-        case "application/rtf":
-            # Extract text from an RTF file
-            text, images = extract_from_rtf(buffer)
-            args["content"] = text
-            uuid = insert(client, "Document", args)
-
-            for idx, image_buffer in enumerate(images):
-                recursive_vectorization(task, image_buffer, idx)
-
-        case "application/vnd.oasis.opendocument.text":
-            # Extract text from an ODT file
-            text, images = extract_from_odt(buffer)
-            args["content"] = text
-            uuid = insert(client, "Document", args)
-
-            for idx, image_buffer in enumerate(images):
-                recursive_vectorization(task, image_buffer, idx)
-
-        case "text/markdown":
-            # Extract text and images from a Markdown file
-            text, images = extract_from_markdown(buffer)
-            args["content"] = text
-            uuid = insert(client, "Document", args)
-
-            for idx, image_buffer in enumerate(images):
-                recursive_vectorization(task, image_buffer, idx)
-
-        case "image/png" | "image/jpeg" | "image/bmp" | "image/tiff":
-            # Extract text from image
-            text = extract_image_text(buffer)
-            args["content"] = text
-            uuid = insert(client, "Image", args)
-
-        case _:
-            raise ValueError("MIME type is not supported")
-
+    elif extractor.file_type == "image":
+        text = extractor.extract(buffer)
+        args["content"] = text
+        args["imageData"] = buffer
+        insert(client, "Image", args)
+    
     client.close()
+    
+    return extractor.extract(buffer)
