@@ -1,34 +1,62 @@
-We will use Weaviate as our only vector DB. Weaviate is entirely open-source, the least expensive option, and allows us to locally host our database AND models.
+Filefly is a platform that connects your file-hosting providers (Google Drive, OneDrive, Dropbox) as well as other platforms (Canvas, Slack, etc.) and enables you to AI search all your files with simple prompts. Filefly buzzes through all files: text, images, videos, and more. Prompt it with images and text and get your files out in return.
 
-https://weaviate.com
+- “Can you give me all of my previous tax documents?”
+- “Fetch me all of my biology projects about the nervous system.”
+- “Create me a study guide for my BIO 101 class.”
+- “Find all the video clips I filmed in a dark hallway. I need them to edit this piece.”
+- “Can you show me all of the pictures of Ava, my dog? She looks like this: [INSERT IMAGE]”
 
-We will be hosting weaviate on kubernetes as well as the models (CLIP).
+### Onboarding
 
-**Vectorization Pipeline:**
+1. Users sign in with providers they would like to connect (i.e. Microsoft/Dropbox/google/slack/canvas). Each provider is connected with the scopes for content access (OneDrive/Google Drive/Dropbox itself).
+   1. Users may add (authenticate) multiple providers after onboarding.
+   2. For each provider, users will also be able to add a secondary account, so they can search multiple accounts at once.
+      1. For each provider, users will only be able to log in with the primary account associated with that provider.
+      2. Users will only be able to add a primary account to a provider if that primary account is not already authenticated as another user’s primary account.
+         1. For example, if you set [staff@filefly.ai](mailto:staff@filefly.ai) as your primary google account, you can set [mark@filefly.ai](mailto:mark@filefly.ai) as your secondary. Then, no other user will be able to set staff@filefly.ai as their primary google account, only as a secondary.
+   3. No email authentication!!! Look at Tailscale: they do not offer email authentication. We will use one of these, it will be so so so much easier.
+2. After this, users select the plan they want to use to access Filefly. There are three plans available.
+   - Starter, Free: limit 1 GB & 3 providers & only text documents
+   - Basic, $4.99/mo, 30 day free trial offered: limit 100 GB & all providers & all files besides audio and video
+   - Pro, $14.99/mo: 2TB + all providers + API access + filefly-GPT + all files
+   - Enterprise ($?): Pay-as-you-go + all access
+3. They are then asked if they would like to connect any additional primary providers (i.e. Microsoft/Dropbox if they picked Google). Each provider is connected with the scopes for drive access (OneDrive/Google Drive/Dropbox itself) and email access.
 
-1. From the providers, we receive two types of files **workspace files** (google docs, sheets, slides, etc. dropbox? onedrive?) which are native to the platform and need to be reconstructed into another format and **blob files**. \*\*\*\*
-   1. This will be given to use as a JSON manifest, including metadata like createdTime, fileHash, id, size, etc.
-2. When a file is created, we extract it however necessary and turn it into bytes. Then, we use a library to extract the content from the file.
-   1. If a file is deleted, we simply delete the embedding with the appropriate cache in the metadata entry.
-   2. If a file is updated, we delete the old embedding and create a new one.
-3. Depending on the mime type, we will process the file into an embedding into a different way. If at any point it fails due to a file type error, we will go back to step 3b. If it fails while being read in the backup way, we will just abort this task.
-   1. **Workspace files:** Google Docs, Google Slides, Google Sheets, etc.: download into pdf format and treat as that
-   2. `text/plain;charset=...` : feed it straight into openai text-embedding-3-small
-   3. `image/...` : feed it straight into clip vectorizer, doing any necessary pre-processing.
-   4. `.doc` `application/msword` : export as PDF, continue as PDF
-   5. `.docx` `application/vnd.openxmlformats-officedocument.wordprocessingml.document` : export as PDF, continue as PDF
-   6. `.pdf` `application/pdf`
-      1. Extract all text. If no text, perform OCR (easyOCR from opencv) to extract content. Then, embed all text with openai text-embedding-3-small.
-      2. Extract all images. If no images, continue.
-         1. If there are images, vectorize the images using CLIP. For every image, store its CLIP vector embedding in the “Image” collection specifying the corresponding parent file.
-   7. `.pptx` `application/vnd.openxmlformats-officedocument.presentationml.presentation`/: get picture for each slide, get text for each slide using OCR, combine all slides with weights.
-      1. (Optional): Vectorize and store each slide as an “Image”
-   8. Audio: OpenAI Whisper → plaintext for text-embedding-3-small
-   9. `video/...`:
-      1. Extract audio using Whisper into text and embed with clip
-      2. Extract n% (TBD) of the frames and embed with clip.
-      3. Combine audio content with video and store in “Video” collection
-   10. `.xlsx` `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-       1. Feed first n (TBD) rows into llama3.3 and request a summary. Embed the summary into text-embedding-3-small and store in the “Document” collection.
-   11. See https://textract.readthedocs.io/en/stable/ for extracting text of other doc types and then puttng text straight into clip
-4. Literally just upload the file content and metadata to weaviate and it will do the rest.
+   1. A provider for files locally stored on their computer will also be available.
+   2. Each computer connected counts as a provider
+   3. This is the only way to access iCloud Drive files since Apple offers no API.
+   4. This is made possible using the Filefly relay, which offers ephemeral access
+
+      [Filefly Relay ](https://www.notion.so/Filefly-Relay-15f9a27f9dc9811a8bf3d4eb0b687752?pvs=21)
+
+4. Users select the provider they want to use to store new files and organized files. They will also choose files that they want to exclude. Filefly will be allowed to edit and delete files at this provider, and may need to ask for additional scopes.
+
+5. The user will now be dismissed until we finish generating embeddings for their files (either the top 500 last edited or all of them)
+
+   1. can either implement with a cool react loading screen or just telling them to piss off and then sending an email/push when their files are ready to search
+
+6. For each of the files in the super-hierarchy, we must now generate the embedding and insert them into the vector database.
+
+7. Subscribe to updates either via webhook or cronjob and update the user’s vector documents as required.
+
+8. After we are done vectorizing each document, we bring the user back and allow them to begin prompting.
+
+9. LLM takes in prompt and any upload images and creates a query document
+
+### Frontends
+
+Users will be able to interact with Filefly in one of three ways
+
+1. Our website
+2. ChatGPT GPTs
+3. Raycast (SUPER productivity)
+
+(if anthropic ever launches a GPT app store also there)
+
+### Target Audience
+
+People with a load of files. It needs to have a slick design and be usable by anybody regardless of technical expertise. Think of my uncle with his 10,000 documents and taking 30 minutes to find a specific one!
+
+Also, people that have their files literally everywhere. I use Google Drive, OneDrive, & iCloud Drive all religiously and would benefit massively from some way to quickly access them all.
+
+[Vector Database](https://www.notion.so/Vector-Database-15f9a27f9dc980ac9395fe19f43001c7?pvs=21)
