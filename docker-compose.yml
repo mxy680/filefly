@@ -70,9 +70,9 @@ services:
       - shared-network
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 3s
+      interval: 2s
       timeout: 30s
-      retries: 3
+      retries: 5
 
   ocr:
     build:
@@ -85,7 +85,7 @@ services:
       - shared-network
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9000/health || exit 1"]
-      interval: 5s
+      interval: 2s
       timeout: 10s
       retries: 10
 

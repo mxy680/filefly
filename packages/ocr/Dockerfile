@@ -17,6 +17,9 @@ COPY pyproject.toml poetry.lock* /app/
 # Install dependencies
 RUN poetry config virtualenvs.create false && poetry install --no-root --only main
 
+# Download EasyOCR model files
+RUN poetry run python -c "import easyocr; easyocr.Reader(['en'], download_enabled=True)"
+
 # Copy the application code
 COPY . .
 

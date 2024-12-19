@@ -9,7 +9,6 @@ app = FastAPI()
 # Load EasyOCR model
 reader = easyocr.Reader(["en"])  # Load English OCR model once
 
-
 @app.get("/health")
 async def health():
     return {"status": "ok"}
