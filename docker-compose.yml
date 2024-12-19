@@ -1,0 +1,98 @@
+services:
+  # ---------------------------------------- Apps ----------------------------------------
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/api:/app
+    depends_on:
+      weaviate:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      ocr:
+        condition: service_healthy
+    networks:
+      - shared-network
+
+  # ---------------------------------------- Packages ----------------------------------------
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.28.1
+    ports:
+      - 8080:8080
+      - 50051:50051
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      ENABLE_API_BASED_MODULES: 'true'
+      CLUSTER_HOSTNAME: 'node1'
+      ENABLE_MODULES: 'multi2vec-clip' # comma-separated list of modules to enable
+      CLIP_INFERENCE_API: http://multi2vec-clip:8080 # Set the inference API endpoint
+      NODE_ENV: dev
+    env_file:
+      - .env
+    networks:
+      - shared-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:8080/v1/.well-known/ready || exit 1"]
+      interval: 3s
+      timeout: 10s
+      retries: 5
+
+  multi2vec-clip:
+    image: cr.weaviate.io/semitechnologies/multi2vec-clip:sentence-transformers-clip-ViT-B-32-multilingual-v1
+    environment:
+      ENABLE_CUDA: 0 # Set to 1 to enable GPU support
+    restart: unless-stopped
+    networks:
+      - shared-network
+
+  rabbitmq:
+    build:
+      context: ./packages/rabbitmq
+      dockerfile: Dockerfile
+    ports:
+      - "5672:5672" # Messaging port
+      - "15672:15672" # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - shared-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 3s
+      timeout: 30s
+      retries: 3
+
+  ocr:
+    build:
+      context: ./packages/ocr
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    restart: always
+    networks:
+      - shared-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9000/health || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+networks:
+  shared-network:
+    external: true
+
+volumes:
+  weaviate_data:
+  rabbitmq-data:
