@@ -6,6 +6,12 @@
             "type": "shell",
             "command": "docker-compose up -d --build",
             "problemMatcher": []
+        },
+        {
+            "label": "Docker Compose Up",
+            "type": "shell",
+            "command": "docker-compose up -d",
+            "problemMatcher": []
         }
     ]
   }
