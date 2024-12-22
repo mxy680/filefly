@@ -1,88 +1,50 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "ui": "tui",
   "tasks": {
-    "rabbitmq#start": {
+    "rabbitmq:start": {
       "cache": false,
       "outputs": []
     },
-    "rabbitmq#stop": {
+    "rabbitmq:stop": {
       "cache": false,
       "outputs": []
     },
-    "rabbitmq#reset": {
+    "rabbitmq:reset": {
       "cache": false,
       "outputs": []
     },
-    "vector-db#start": {
+    "ocr:start": {
       "cache": false,
       "outputs": []
     },
-    "vector-db#stop": {
+    "ocr:stop": {
       "cache": false,
       "outputs": []
     },
-    "vector-db#reset": {
+    "api:dev": {
       "cache": false,
-      "outputs": []
+      "dependsOn": ["rabbitmq:start", "ocr:start"]
     },
-    "prisma#generate": {
+    "server:dev": {
       "cache": false,
-      "outputs": ["packages/prisma/generated/**"]
+      "dependsOn": ["rabbitmq:start", "ocr:start"]
     },
-    "prisma#migrate:dev": {
-      "dependsOn": ["prisma#generate"],
-      "cache": false
-    },
-    "prisma#reset": {
+    "web:dev": {
       "cache": false,
-      "outputs": []
-    },
-    "ocr#start": {
-      "cache": false,
-      "outputs": []
-    },
-    "ocr#stop": {
-      "cache": false,
-      "outputs": []
-    },
-    "web#dev": {
-      "dependsOn": [
-        "rabbitmq#start",
-        "vector-db#start",
-        "prisma#generate",
-        "ocr#start"
-      ],
-      "cache": false
-    },
-    "server#dev": {
-      "dependsOn": [
-        "rabbitmq#start",
-        "vector-db#start",
-        "prisma#generate",
-        "ocr#start"
-      ],
-      "cache": false
-    },
-    "api#dev": {
-      "dependsOn": [
-        "rabbitmq#start",
-        "vector-db#start",
-        "prisma#generate",
-        "ocr#start"
-      ],
-      "cache": false
+      "dependsOn": ["api:dev", "server:dev"]
     },
     "dev": {
-      "dependsOn": ["web#dev", "server#dev", "api#dev"]
+      "cache": false,
+      "dependsOn": ["web:dev", "server:dev", "api:dev"]
     },
-    "stop": {
-      "dependsOn": ["rabbitmq#stop", "vector-db#stop"],
-      "cache": false
+    "build": {
+      "dependsOn": ["^build"]
     },
-    "reset": {
-      "dependsOn": ["rabbitmq#stop", "vector-db#stop", "prisma#reset"],
-      "cache": false
+    "lint": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": []
     }
   }
 }

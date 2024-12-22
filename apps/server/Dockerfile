@@ -26,7 +26,6 @@ RUN pnpm prisma generate --schema=./prisma/schema.prisma
 # Build the application
 RUN pnpm run build
 
-
 # -------------------------
 # 2) Runner (Production) Stage
 # -------------------------

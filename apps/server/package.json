@@ -9,7 +9,10 @@
     "build": "nest build",
     "dev": "nest start --watch",
     "start": "nest start",
-    "prod": "node dist/main"
+    "prod": "node dist/main",
+    "prisma:migrate": "prisma migrate dev --schema=./prisma/schema.prisma --name create-db",
+    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "prisma:reset": "pnpx prisma migrate reset --schema=./prisma/schema.prisma --force --skip-seed"
   },
   "dependencies": {
     "@golevelup/nestjs-rabbitmq": "^5.6.1",

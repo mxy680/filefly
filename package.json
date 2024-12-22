@@ -2,8 +2,8 @@
 	"name": "filefly",
 	"private": true,
 	"scripts": {
-		"build": "turbo build",
-		"dev": "turbo dev",
+		"build": "docker compose build",
+		"dev": "docker compose up",
 		"lint": "turbo lint",
 		"format": "prettier --write \"**/*.{ts,tsx,md}\""
 	},
