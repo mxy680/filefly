@@ -63,6 +63,7 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None):
     try:
         # Establish the client connection to Weaviate
         client = weaviate.connect_to_local(
+            host=os.getenv("WEAVIATE_HOST"),
             port=8080,
             grpc_port=50051,
             headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")},

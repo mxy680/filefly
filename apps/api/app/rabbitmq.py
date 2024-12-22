@@ -1,57 +1,35 @@
-import pika
+import aio_pika
 import asyncio
 import json
 from app.tasks.vectorization import handle_vectorization_task
 import os 
 
 async def start_rabbitmq_consumer():
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, rabbitmq_consumer)
-
-
-def rabbitmq_consumer():
     # Connect to RabbitMQ
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host=os.getenv("RABBITMQ_HOST"))
-    )
-    channel = connection.channel()
+    connection = await aio_pika.connect_robust(os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672"))
+    channel = await connection.channel()
 
     # Declare the exchange
-    channel.exchange_declare(
-        exchange="processing-exchange", exchange_type="direct", durable=True
+    exchange = await channel.declare_exchange(
+        "processing-exchange", aio_pika.ExchangeType.DIRECT, durable=True
     )
 
-    # Declare the queues
-    channel.queue_declare(queue="vectorization-task", durable=True)
+    # Declare the queue
+    queue = await channel.declare_queue("vectorization-task", durable=True)
 
-    # Bind queues to the exchange with routing keys
-    channel.queue_bind(
-        exchange="processing-exchange",
-        queue="vectorization-task",
-        routing_key="vectorization-task",
-    )
+    # Bind the queue to the exchange
+    await queue.bind(exchange, routing_key="vectorization-task")
 
-    # Define callback functions for each queue
-    async def vectorization_callback(ch, method, properties, body):
-        task = json.loads(body)
-        await handle_vectorization_task(task)
+    # Define async callback
+    async def vectorization_callback(message: aio_pika.IncomingMessage):
+        async with message.process():
+            task = json.loads(message.body)
+            print(f"Received vectorization task for {task.get('fileId')}")
+            await handle_vectorization_task(task)
 
-        # Send response back to producer
-        if properties.reply_to:
-            ch.basic_publish(
-                exchange="",
-                routing_key=properties.reply_to,
-                properties=pika.BasicProperties(
-                    correlation_id=properties.correlation_id
-                ),
-                body=json.dumps({"status": "success"}),
-            )
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    # Bind queues to their respective callbacks
-    channel.basic_consume(
-        queue="vectorization-task", on_message_callback=vectorization_callback
-    )
-
+    # Start consuming
+    await queue.consume(vectorization_callback)
     print("RabbitMQ consumers are running...")
-    channel.start_consuming()
+
+    # Keep the consumer running
+    await asyncio.Future()

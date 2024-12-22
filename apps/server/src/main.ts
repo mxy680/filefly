@@ -19,7 +19,6 @@ async function bootstrap() {
 
   // Start the main HTTP application
   await app.listen(4000);
-  console.log('HTTP server running on http://localhost:4000');
 }
 
 bootstrap();
