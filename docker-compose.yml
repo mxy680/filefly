@@ -9,9 +9,9 @@ services:
     volumes:
       - ./apps/api:/app
     depends_on:
-      weaviate:
-        condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      weaviate:
         condition: service_healthy
       ocr:
         condition: service_healthy

@@ -8,11 +8,7 @@ from app.processors.function_map import mime_processing_map
 
 import weaviate
 import os
-from dotenv import load_dotenv
 import base64
-
-load_dotenv()
-
 
 def recursive_vectorization(task: dict, buffer: bytes, idx: int):
     """

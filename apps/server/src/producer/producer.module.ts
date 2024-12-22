@@ -1,11 +1,16 @@
 import { Module } from '@nestjs/common';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProducerService } from './producer.service';
 
 @Module({
   imports: [
-    RabbitMQModule.forRoot(RabbitMQModule, {
-      uri: 'amqp://guest:guest@localhost:5672',
+    ConfigModule.forRoot(),
+    RabbitMQModule.forRootAsync(RabbitMQModule, {
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('RABBITMQ_URL'),
+      }),
     }),
   ],
   providers: [ProducerService],

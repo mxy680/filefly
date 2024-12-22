@@ -2,7 +2,7 @@ import pika
 import asyncio
 import json
 from app.tasks.vectorization import handle_vectorization_task
-
+import os 
 
 async def start_rabbitmq_consumer():
     loop = asyncio.get_event_loop()
@@ -12,7 +12,7 @@ async def start_rabbitmq_consumer():
 def rabbitmq_consumer():
     # Connect to RabbitMQ
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host="localhost")
+        pika.ConnectionParameters(host=os.getenv("RABBITMQ_HOST"))
     )
     channel = connection.channel()
 
