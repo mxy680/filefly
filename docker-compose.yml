@@ -15,6 +15,26 @@ services:
         condition: service_healthy
       ocr:
         condition: service_healthy
+    env_file:
+      - ./apps/api/.env
+    environment:
+      NODE_ENV: development
+    networks:
+      - shared-network
+
+  server:
+    build:
+      context: ./apps/server
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - ./apps/server/.env
+    environment:
+      NODE_ENV: development
     networks:
       - shared-network
 
@@ -33,15 +53,15 @@ services:
       DEFAULT_VECTORIZER_MODULE: 'none'
       ENABLE_API_BASED_MODULES: 'true'
       CLUSTER_HOSTNAME: 'node1'
-      ENABLE_MODULES: 'multi2vec-clip' # comma-separated list of modules to enable
-      CLIP_INFERENCE_API: http://multi2vec-clip:8080 # Set the inference API endpoint
+      ENABLE_MODULES: 'multi2vec-clip'
+      CLIP_INFERENCE_API: http://multi2vec-clip:8080
       NODE_ENV: dev
     env_file:
       - .env
     networks:
       - shared-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:8080/v1/.well-known/ready || exit 1"]
+      test: [ "CMD-SHELL", "wget --spider -q http://127.0.0.1:8080/v1/.well-known/ready || exit 1" ]
       interval: 3s
       timeout: 10s
       retries: 5
@@ -49,7 +69,7 @@ services:
   multi2vec-clip:
     image: cr.weaviate.io/semitechnologies/multi2vec-clip:sentence-transformers-clip-ViT-B-32-multilingual-v1
     environment:
-      ENABLE_CUDA: 0 # Set to 1 to enable GPU support
+      ENABLE_CUDA: 0
     restart: unless-stopped
     networks:
       - shared-network
@@ -59,8 +79,8 @@ services:
       context: ./packages/rabbitmq
       dockerfile: Dockerfile
     ports:
-      - "5672:5672" # Messaging port
-      - "15672:15672" # Management UI port
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -84,7 +104,7 @@ services:
     networks:
       - shared-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9000/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -sf http://127.0.0.1:9000/health || exit 1" ]
       interval: 2s
       timeout: 10s
       retries: 10

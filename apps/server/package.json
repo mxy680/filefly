@@ -7,24 +7,17 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
     "dev": "nest start --watch",
-    "debug": "nest start --debug --watch",
-    "prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "start": "nest start",
+    "prod": "node dist/main"
   },
   "dependencies": {
     "@golevelup/nestjs-rabbitmq": "^5.6.1",
     "@nestjs/axios": "^3.1.1",
+    "@nestjs/cli": "^10.4.9",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
-    "@nestjs/core": "^10.0.0",
+    "@nestjs/core": "^10.4.6",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^10.4.7",
@@ -39,27 +32,20 @@
     "google-auth-library": "^9.14.2",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mammoth": "^1.8.0",
     "passport": "^0.7.0",
     "passport-dropbox-oauth2": "^1.1.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "pdf-lib": "^1.17.1",
-    "pdf-parse": "^1.1.1",
-    "pdfjs-dist": "^4.8.69",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.5",
-    "tesseract.js": "^5.1.1",
-    "textract": "^2.5.0",
+    "turbo": "^2.1.3",
     "uuid": "^11.0.2",
-    "weaviate-client": "^3.2.3",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
     "@repo/eslint-config": "workspace:*",
@@ -74,7 +60,7 @@
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^8.42.0",
     "jest": "^29.5.0",
-    "prettier": "^3.0.0",
+    "prettier": "^3.2.5",
     "prisma": "^5.21.1",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
@@ -82,23 +68,6 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "typescript": "^5.4.5"
   }
 }

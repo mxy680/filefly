@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "FastAPI application containerized with Docker and managed with Poetry.",
 	"scripts": {
-	  "dev": "docker-compose up --build"
+	  "dev": "poetry run uvicorn app.main:app --reload"
 	},
 	"keywords": [],
 	"author": "",
