@@ -1,26 +1,11 @@
-import type { Config } from "tailwindcss";
-import config from "@repo/ui/tailwind.config";
+import type { Config } from 'tailwindcss';
 
-const webConfig = {
-  ...config,
-  presets: [config],
-  theme: {
-    extend: {
-      colors: {
-        test: {
-          100: "#f2e8e5",
-          200: "#eaddd7",
-          300: "#e0cec7",
-          400: "#d2bab0",
-          500: "#bfa094",
-          600: "#a18072",
-          700: "#977669",
-          800: "#846358",
-          900: "#43302b",
-        },
-      },
-    },
-  },
-} satisfies Config;
+const config: Config = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx}',  // Include all files in the `pages` directory
+    './components/**/*.{js,ts,jsx,tsx}', // Include all files in the `components` directory
+    './app/**/*.{js,ts,jsx,tsx}',    // Include all files in the `app` directory for Next.js 13+
+  ],
+};
 
-export default webConfig;
+export default config;

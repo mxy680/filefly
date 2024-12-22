@@ -12,7 +12,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.7",
     "cookie": "^1.0.1",
@@ -24,8 +23,6 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^14.1.1",
     "@repo/eslint-config": "workspace:*",
-    "@repo/tailwind-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.61",

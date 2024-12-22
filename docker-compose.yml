@@ -38,6 +38,22 @@ services:
     networks:
       - shared-network
 
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on: 
+      - api
+      - server
+    env_file:
+      - ./apps/web/.env
+    environment:
+      NODE_ENV: development
+    networks:
+      - shared-network
+
   # ---------------------------------------- Packages ----------------------------------------
   weaviate:
     image: cr.weaviate.io/semitechnologies/weaviate:1.28.1

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@repo/ui/components/ui/button";
 
 const Dashboard = () => {
   const router = useRouter();
@@ -39,7 +38,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      <Button onClick={handleLogout}>Logout</Button>
+      <button onClick={handleLogout} className='border-2 m-4'>Logout</button>
       <ul>
         {changes &&
           changes.length > 0 &&
