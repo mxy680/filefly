@@ -4,13 +4,26 @@ FROM python:3.12-slim
 # Suppress warnings globally for the container
 ENV PYTHONWARNINGS=ignore
 
-# Set the working directory
-WORKDIR /app
+# Install system dependencies for unoconv and LibreOffice
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    unoconv \
+    libreoffice \
+    libreoffice-common \
+    python3-uno \
+    ghostscript \
+    poppler-utils \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject.toml and poetry.lock into the container
+# Set environment variables for UNO_PATH
+ENV UNO_PATH=/usr/lib/libreoffice/program
+ENV PYTHONPATH=/usr/lib/python3/dist-packages
+
+# Install Python dependencies
+WORKDIR /app
 COPY pyproject.toml poetry.lock /app/
 
-# Install Poetry with retries and dependencies
 RUN pip install --no-cache-dir poetry && \
     poetry config virtualenvs.create false && \
     poetry install --no-root --no-dev

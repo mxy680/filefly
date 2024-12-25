@@ -99,6 +99,8 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None):
         # Extract text and images from document
         text, images = extractor.extract(buffer)
         args["content"] = text
+        print("Text Length: ", len(text))
+        print("Images: ", len(images))
         
         # Chunkify the text and insert each chunk if necessary
         chunks = chunkify_text(text)
