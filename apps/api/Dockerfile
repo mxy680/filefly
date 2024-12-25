@@ -1,6 +1,9 @@
 # Use a slim Python image
 FROM python:3.12-slim
 
+# Suppress warnings globally for the container
+ENV PYTHONWARNINGS=ignore
+
 # Set the working directory
 WORKDIR /app
 

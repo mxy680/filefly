@@ -2,7 +2,7 @@ from app.loaders.google import (
     load_drive as load_google_drive,
     load_file as load_google_file,
 )
-from app.db.insertion import insert, insert_chunks
+from app.db.insertion import insert, insert_chunks, exists
 from utils.chunking import chunkify_text
 from app.processors.function_map import mime_processing_map
 
@@ -27,6 +27,7 @@ def recursive_vectorization(task: dict, buffer: bytes, idx: int):
             "accessToken": task.get("accessToken"),
             "fileId": f"{task.get('fileId')}_image_{idx + 1}",
             "metadata": task.get("metadata"),
+            "hash": task.get("hash"),
         },
         buffer,
     )
@@ -46,6 +47,7 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None):
     mimeType = task.get("mimeType")
     fileName = task.get("fileName")
     metadata = task.get("metaData")
+    hash = task.get("hash")
         
     if metadata:
         metadata = " ".join([f"{k}: {v}" for k, v in metadata.items()])
@@ -55,6 +57,7 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None):
         "metadata": metadata,
         "provider": provider,
         "fileId": fileId,
+        "hash": hash,
     }
     
     if not accessToken:  # Check if accessToken is empty or None
@@ -84,11 +87,14 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None):
     if not buffer:
         raise ValueError("Failed to load file")
  
- 
     extractor = mime_processing_map.get(mimeType)
     if not extractor:
         raise ValueError("MIME type not supported")
     
+    if exists(client, extractor.file_type, fileId, hash):
+        print(f"Object with fileId '{fileId}' already exists.")
+        return None
+        
     if extractor.file_type == "Document":
         # Extract text and images from document
         text, images = extractor.extract(buffer)

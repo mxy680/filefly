@@ -26,6 +26,12 @@ schemas = [
                 description="Additional metadata about the document.",
             ),
             Property(
+                name="hash",
+                data_type=DataType.TEXT,
+                description="The hash of the document content.",
+                skip_vectorization=True,
+            ),
+            Property(
                 name="provider",
                 data_type=DataType.TEXT,
                 description="The source or provider of the document.",
@@ -80,6 +86,12 @@ schemas = [
                 description="Additional metadata about the image.",
             ),
             Property(
+                name="hash",
+                data_type=DataType.TEXT,
+                description="The hash of the document content.",
+                skip_vectorization=True,
+            ),
+            Property(
                 name="provider",
                 data_type=DataType.TEXT,
                 description="The source or provider of the image.",
@@ -127,6 +139,12 @@ schemas = [
                 name="metadata",
                 data_type=DataType.TEXT,
                 description="Additional metadata about the dataset.",
+            ),
+            Property(
+                name="hash",
+                data_type=DataType.TEXT,
+                description="The hash of the document content.",
+                skip_vectorization=True,
             ),
             Property(
                 name="provider",
@@ -193,6 +211,12 @@ schemas = [
                 name="metadata",
                 data_type=DataType.TEXT,
                 description="Additional metadata about the code, such as version or authorship.",
+            ),
+            Property(
+                name="hash",
+                data_type=DataType.TEXT,
+                description="The hash of the document content.",
+                skip_vectorization=True,
             ),
             Property(
                 name="provider",

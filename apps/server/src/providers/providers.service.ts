@@ -38,15 +38,11 @@ export class ProvidersService {
         }
     }
 
-    async uploadData(provider: string, accessToken: string, userId: number) {
-        // Add Tenant to Weaviate
-        
-
+    async uploadData(provider: string, accessToken: string, userId: number) {        
         // Perform provider specific actions
         switch (provider) {
             case 'google':
-                await this.googleService.uploadFiles(accessToken, userId);
-                await this.googleService.indexDrive(accessToken, userId);
+                await this.googleService.uploadDrive(accessToken, userId);
                 break;
             default:
                 throw new Error('Provider not supported');

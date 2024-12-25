@@ -12,6 +12,11 @@
             "type": "shell",
             "command": "docker-compose up -d",
             "problemMatcher": []
+        },
+        {
+            "label": "Reset Postgres Database",
+            "type": "shell",
+            "command": "cd apps/server || exit && pnpx prisma migrate reset --force --skip-seed"
         }
     ]
   }

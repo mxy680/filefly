@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDrivePrismaService } from './google-drive.prisma.service';
 
-import { GoogleDriveFile } from './google-drive.types';
+import { GoogleDriveFile } from './google-drive.types'; // For Prisma Schema
 import { ProducerService } from 'src/producer/producer.service';
 
 @Injectable()
@@ -25,7 +25,23 @@ export class GoogleDriveService {
         return { drive, client };
     }
 
-    async uploadFiles(accessToken: string, userId: number): Promise<void> {
+    async upload(file: GoogleDriveFile, accessToken: string, userId: number): Promise<void> {
+        await this.prismaFileService.upsertFile(userId, file);
+
+        this.producerService.sendVectorizationTask({
+            provider: 'google',
+            fileId: file?.id as string,
+            accessToken,
+            mimeType: file?.mimeType as string,
+            hash: file?.sha256Checksum as string,
+            metaData: {
+                size: file?.size as unknown as number,
+                modifiedTime: file?.modifiedTime as string,
+            },
+        });
+    }
+
+    async uploadDrive(accessToken: string, userId: number) {
         const { drive } = this.getDrive(accessToken);
 
         try {
@@ -41,14 +57,39 @@ export class GoogleDriveService {
                     fields: '*',
                 });
 
-                await this.prismaFileService.createFile(userId, file.data as GoogleDriveFile);
+                await this.upload(file.data as GoogleDriveFile, accessToken, userId);
             }));
-
-
         } catch (error) {
             console.error('Error retrieving files:', error.message);
             throw new Error('Failed to retrieve Google Drive files');
         }
+    }
+
+    async uploadChanges(changes: drive_v3.Schema$Change[], userId: number, accessToken: string) {
+        if (changes.length === 0) {
+            return;
+        }
+
+        await Promise.all(changes.map(async (change) => {
+            const { file, removed, changeType } = change;
+
+            // Ensure file data is available
+            if (changeType === 'file') {
+                if (removed || file?.trashed) {
+                    // File is permanently deleted or access was revoked
+                    console.log('Deleting file:', file?.name);
+                    await this.prismaFileService.deleteFile(userId, file?.id);
+                }
+                else {
+                    const fileHashExists = await this.prismaFileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
+                    if (!fileHashExists) {
+                        // File is new or updated
+                        console.log("Attempting to upload file:", file?.name);
+                        await this.upload(file as GoogleDriveFile, accessToken, userId);
+                    }
+                }
+            }
+        }));
     }
 
     async startWatchingChanges(accessToken: string, userId: number) {
@@ -109,66 +150,6 @@ export class GoogleDriveService {
             return { changes, newPageToken };
         } catch (error) {
             throw new Error('Failed to fetch changes');
-        }
-    }
-
-    async uploadChanges(changes: drive_v3.Schema$Change[], userId: number, accessToken: string) {
-        if (changes.length === 0) {
-            return;
-        }
-
-        const { drive } = this.getDrive(accessToken);
-
-        await Promise.all(changes.map(async (change) => {
-            const { file, removed, changeType } = change;
-
-            // Ensure file data is available
-            if (changeType === 'file') {
-                if (removed || file?.trashed) {
-                    // File is permanently deleted or access was revoked
-                    console.log('Deleting file:', file?.name);
-                    await this.prismaFileService.deleteFile(userId, file?.id);
-                }
-                else {
-                    const fileHashExists = await this.prismaFileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
-                    if (!fileHashExists) {
-                        console.log('Processing File:', file?.name);
-
-                        // Extract file contents
-                        const response = await this.producerService.sendVectorizationTask({
-                            provider: 'google',
-                            fileId: file?.id as string,
-                            accessToken,
-                            mimeType: file?.mimeType as string,
-                            metaData: {
-                                size: file?.size as unknown as number,
-                                modifiedTime: file?.modifiedTime as string,
-                            }
-                        });
-                    }
-
-                    // Upsert the file in the database
-                    await this.prismaFileService.upsertFile(userId, file as GoogleDriveFile);
-                }
-            }
-        }));
-    }
-
-    async indexDrive(accessToken: string, userId: number) {
-        try {
-            const { drive } = this.getDrive(accessToken);
-            // Get user's files
-            const files = await this.prismaService.googleDriveFile.findMany({
-                where: { userId },
-            });
-
-            // Index files
-            await Promise.all(files.map(async (file: any) => {
-
-            }));
-        } catch (error) {
-            console.error('Error indexing files:', error.message);
-            throw new Error('Failed to index files');
         }
     }
 }

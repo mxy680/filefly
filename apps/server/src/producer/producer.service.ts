@@ -5,9 +5,9 @@ import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 export class ProducerService {
   constructor(private readonly amqpConnection: AmqpConnection) { }
 
-  async sendVectorizationTask(task: { provider: string, fileId: string, accessToken: string, mimeType: string, metaData: any }): Promise<{ text: string; images: Buffer[] }> {
+  sendVectorizationTask(task: { provider: string, fileId: string, accessToken: string, mimeType: string, hash: string, metaData: any }) {
     try {
-      return await this.amqpConnection.request<{ text: string; images: Buffer[] }>({
+      this.amqpConnection.request<{ text: string, images: Buffer[] }>({
         exchange: 'processing-exchange',
         routingKey: 'vectorization-task',
         payload: {
@@ -16,6 +16,7 @@ export class ProducerService {
           accessToken: task.accessToken,
           mimeType: task.mimeType,
           metaData: task.metaData,
+          hash: task.hash,
         },
         timeout: 100000, // Timeout in milliseconds for the response
       });
