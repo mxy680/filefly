@@ -15,7 +15,7 @@ from zipfile import ZipFile, BadZipFile
 import subprocess
 import tempfile 
 import os
-
+import hashlib
 
 class DocumentExtractor(ABC):
     """
@@ -57,8 +57,33 @@ class PDFExtractor(DocumentExtractor):
                 xref = img[0]
                 base_image = pdf_document.extract_image(xref)
                 images.append(base_image["image"])
+                
+        # Remove images with duplicate hashes
+        unique_images = self._remove_duplicate_images(images)
 
-        return text, images
+        return text, unique_images
+    
+    
+    def _remove_duplicate_images(self, images: List[bytes]) -> List[bytes]:
+        """
+        Remove duplicate images based on their hash values.
+
+        Args:
+            images (List[bytes]): List of image data in bytes.
+
+        Returns:
+            List[bytes]: List of unique image data.
+        """
+        seen_hashes = set()
+        unique_images = []
+
+        for img in images:
+            img_hash = hashlib.sha256(img).hexdigest()
+            if img_hash not in seen_hashes:
+                seen_hashes.add(img_hash)
+                unique_images.append(img)
+
+        return unique_images
     
 
 class PlainTextExtractor(DocumentExtractor):
@@ -121,31 +146,6 @@ class LegacyWordExtractor(DocumentExtractor):
                 # Clean up the temporary output PDF
                 if os.path.exists(temp_output_pdf):
                     os.unlink(temp_output_pdf)
-                    
-        pdf_path = temp_output_pdf
-        output_dir = "/output"  # Directory to save extracted data
-        os.makedirs(output_dir, exist_ok=True)
-
-        # Save text
-        text_file_path = os.path.join(output_dir, "extracted_text.txt")
-        with open(text_file_path, "w", encoding="utf-8") as text_file:
-            text_file.write(text)
-
-        # Save images
-        for idx, image_data in enumerate(images):
-            image_file_path = os.path.join(output_dir, f"image_{idx + 1}.png")
-            with open(image_file_path, "wb") as image_file:
-                image_file.write(image_data)
-
-        # Log saved files
-        print(f"Text saved to: {text_file_path}")
-        for idx in range(len(images)):
-            print(f"Image {idx + 1} saved to: {os.path.join(output_dir, f'image_{idx + 1}.png')}")
-
-        # Optional: Save the PDF itself for reference
-        pdf_output_path = os.path.join(output_dir, os.path.basename(pdf_path))
-        os.rename(pdf_path, pdf_output_path)
-        print(f"PDF saved to: {pdf_output_path}")
 
         return text, images
 
