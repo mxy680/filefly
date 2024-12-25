@@ -24,7 +24,6 @@ async def start_rabbitmq_consumer():
     async def vectorization_callback(message: aio_pika.IncomingMessage):
         async with message.process():
             task = json.loads(message.body)
-            print(f"Received vectorization task for {task.get('fileId')}")
             await handle_vectorization_task(task)
 
     # Start consuming

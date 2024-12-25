@@ -8,8 +8,16 @@ mime_processing_map = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": WordExtractor(),
     "application/pdf": PDFExtractor(),
     "application/rtf": RTFExtractor(),
+    "text/rtf": RTFExtractor(),
     "application/vnd.oasis.opendocument.text": ODTExtractor(),
+    "application/vnd.oasis.opendocument.text-template": ODTExtractor(),
     "text/markdown": MarkdownExtractor(),
+    "text/x-markdown": MarkdownExtractor(),
+    "text/html": HTMLExtractor(),
+    "application/html": HTMLExtractor(),
+    "application/xhtml+xml": HTMLExtractor(),
+    "text/xml": XMLExtractor(),
+    "application/xml": XMLExtractor(),
     
     # Image-based formats
     "image/png": GeneralImageExtractor(),

@@ -87,6 +87,7 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None):
     if not buffer:
         raise ValueError("Failed to load file")
  
+    print(f"Processing file '{fileName}' with MIME type '{mimeType}'")
     extractor = mime_processing_map.get(mimeType)
     if not extractor:
         raise ValueError("MIME type not supported")

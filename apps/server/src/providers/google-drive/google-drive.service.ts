@@ -31,6 +31,7 @@ export class GoogleDriveService {
         this.producerService.sendVectorizationTask({
             provider: 'google',
             fileId: file?.id as string,
+            fileName: file?.name as string,
             accessToken,
             mimeType: file?.mimeType as string,
             hash: file?.sha256Checksum as string,
