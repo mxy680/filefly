@@ -22,7 +22,8 @@ def embed_text_chunks(chunks: list[str]) -> list:
         try:
             embeddings.append(client.embeddings.create(
                 input=chunk,
-                model="text-embedding-3-small"
+                model="text-embedding-3-small",
+                dimensions=512
             ).data[0].embedding)
         except Exception as e:
             print(f"Failed to embed text chunk: {e}")
