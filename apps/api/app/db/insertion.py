@@ -1,5 +1,5 @@
 import weaviate
-from app.utils.embedding import embed_text_chunks
+from utils.embedding import embed_text_chunks
 
 def insert(client: weaviate.WeaviateClient, name: str, args: dict):
     """

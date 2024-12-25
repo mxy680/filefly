@@ -3,7 +3,7 @@ from app.loaders.google import (
     load_file as load_google_file,
 )
 from app.db.insertion import insert, insert_chunks
-from app.utils.chunking import chunkify_text
+from utils.chunking import chunkify_text
 from app.processors.function_map import mime_processing_map
 
 import weaviate
