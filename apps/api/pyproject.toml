@@ -30,6 +30,7 @@ openai = "^1.57.4"
 requests = "^2.32.3"
 aio-pika = "^9.5.4"
 olefile = "^0.47"
+cairosvg = "^2.7.1"
 
 [build-system]
 requires = ["poetry-core"]

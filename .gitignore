@@ -39,3 +39,12 @@ yarn-error.log*
 
 # Scripts
 scripts/commands.txt
+
+# Virtual Environments
+**/.venv/
+
+# Pycache
+__pycache__/
+
+# Notebooks
+notebook/

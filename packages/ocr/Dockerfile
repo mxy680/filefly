@@ -1,30 +1,48 @@
-# Use a lightweight Python image
-FROM python:3.12-slim
+FROM python:3.8-slim
 
-# Install Poetry
-RUN apt-get update && apt-get install -y curl libgl1-mesa-glx tesseract-ocr \
-    && curl -sSL https://install.python-poetry.org | python3 - \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+ARG service_home="/home/EasyOCR"
+ARG language_models="['en']"
 
-ENV PATH="/root/.local/bin:$PATH"
+# 1. Install system libs
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+      git \
+      build-essential \
+      libglib2.0-0 \
+      libsm6 \
+      libxext6 \
+      libxrender-dev \
+      libgl1-mesa-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
+# 2. Install newer PyTorch 2.0+ CPU wheels
+RUN pip install --no-cache-dir \
+    torch==2.0.1 \
+    torchvision==0.15.2 \
+    --extra-index-url https://download.pytorch.org/whl/cpu
+
+# 3. Clone & build the latest EasyOCR from Git
+RUN mkdir "$service_home" \
+    && git clone "https://github.com/JaidedAI/EasyOCR.git" "$service_home" \
+    && cd "$service_home" \
+    && git pull origin master
+
+RUN cd "$service_home" \
+    && python setup.py build_ext --inplace -j 4 \
+    && python -m pip install -e .
+
+# 4. Add your FastAPI app
 WORKDIR /app
+COPY main.py /app/
 
-# Copy Poetry files first to cache dependencies
-COPY pyproject.toml poetry.lock* /app/
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    pillow \
+    python-multipart
 
-# Install dependencies
-RUN poetry config virtualenvs.create false && poetry install --no-root --only main
+# 5. (Optional) Pre-download model
+RUN python -c "import easyocr; reader = easyocr.Reader(${language_models}, gpu=False)"
 
-# Download EasyOCR model files
-RUN poetry run python -c "import easyocr; easyocr.Reader(['en'], download_enabled=True)"
-
-# Copy the application code
-COPY . .
-
-# Expose the FastAPI port
 EXPOSE 9000
-
-# Run the FastAPI server
-CMD ["poetry", "run", "uvicorn", "app.service:app", "--host", "0.0.0.0", "--port", "9000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000"]

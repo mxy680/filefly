@@ -1,9 +1,10 @@
-from app.processors.document import *
-from app.processors.image import *
+from app.processors.document.document import *
+from app.processors.image.image import *
 
 mime_processing_map = {
-    # Text-based formats
+    # --------------------------------- Document ---------------------------------
     "text/plain": PlainTextExtractor(),
+    "application/plain": PlainTextExtractor(),
     "application/msword": LegacyWordExtractor(),
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": WordExtractor(),
     "application/pdf": PDFExtractor(),
@@ -19,11 +20,17 @@ mime_processing_map = {
     "text/xml": XMLExtractor(),
     "application/xml": XMLExtractor(),
     
-    # Image-based formats
+    # --------------------------------- Image -------------------------------------
     "image/png": GeneralImageExtractor(),
     "image/jpeg": GeneralImageExtractor(),
-    "image/bmp": GeneralImageExtractor(),
-    "image/tiff": GeneralImageExtractor(),
-    "image/gif": GeneralImageExtractor(),
-    "image/webp": GeneralImageExtractor(),
+    "image/jpg": GeneralImageExtractor(),
+    "image/vnd.microsoft.icon": AdvancedImageExtractor(),
+    "image/x-icon": AdvancedImageExtractor(),
+    "image/webp": AdvancedImageExtractor(),
+    "image/tiff": AdvancedImageExtractor(),
+    "image/x-tiff": AdvancedImageExtractor(),
+    "image/bmp": AdvancedImageExtractor(),
+    "image/x-bmp": AdvancedImageExtractor(),
+    "image/gif": GraphicsInterchangeFormatExtractor(),
+    "image/svg+xml": ScalableVectorGraphicsExtractor(),
 }

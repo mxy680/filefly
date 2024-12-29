@@ -13,8 +13,6 @@ services:
         condition: service_healthy
       weaviate:
         condition: service_healthy
-      ocr:
-        condition: service_healthy
     env_file:
       - ./apps/api/.env
     environment:
@@ -121,7 +119,7 @@ services:
     networks:
       - shared-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl -sf http://127.0.0.1:9000/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -sf http://127.0.0.1:9000/ || exit 1" ]
       interval: 2s
       timeout: 10s
       retries: 10

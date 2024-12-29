@@ -19,6 +19,7 @@ export class ProducerService {
           metaData: task.metaData,
           hash: task.hash,
         },
+        timeout: 1000000
       });
     } catch (error) {
       console.error('Failed to send extraction task:', error);
