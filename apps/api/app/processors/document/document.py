@@ -3,7 +3,6 @@ import base64
 from abc import ABC, abstractmethod
 from typing import Tuple, List
 from docx import Document
-from mammoth import convert_to_markdown
 from PyPDF2 import PdfReader
 import fitz  # PyMuPDF
 from striprtf.striprtf import rtf_to_text
@@ -23,38 +22,46 @@ from bs4 import BeautifulSoup
 
 class DocumentExtractor(ABC):
     """
-    Abstract base class for file extraction.
+    Abstract base class for document extraction.
+    Defines the interface for all document extractors.
     """
 
     @property
     def file_type(self) -> str:
+        """
+        Returns the type of file being processed.
+        """
         return "Document"
 
     @abstractmethod
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
         """
-        Extracts text and images from a file.
+        Abstract method to extract text and images from a document.
 
         Args:
             buffer (bytes): The file content.
 
         Returns:
-            Tuple[str, List[bytes]]: Extracted text and images.
+            Tuple[str, List[bytes]]: Extracted text and a list of images.
         """
         pass
 
 
 class PDFExtractor(DocumentExtractor):
+    """
+    Extracts text and images from PDF files.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
         text = ""
         images = []
 
-        # Extract text
+        # Extract text from PDF pages using PyPDF2
         pdf_reader = PdfReader(io.BytesIO(buffer))
         for page in pdf_reader.pages:
             text += page.extract_text()
 
-        # Extract images
+        # Extract images from PDF pages using PyMuPDF
         pdf_document = fitz.open("pdf", buffer)
         for page in pdf_document:
             for _, img in enumerate(page.get_images(full=True)):
@@ -62,20 +69,20 @@ class PDFExtractor(DocumentExtractor):
                 base_image = pdf_document.extract_image(xref)
                 images.append(base_image["image"])
 
-        # Remove images with duplicate hashes
+        # Remove duplicate images based on hash
         unique_images = self._remove_duplicate_images(images)
 
         return text, unique_images
 
     def _remove_duplicate_images(self, images: List[bytes]) -> List[bytes]:
         """
-        Remove duplicate images based on their hash values.
+        Remove duplicate images based on hash values.
 
         Args:
-            images (List[bytes]): List of image data in bytes.
+            images (List[bytes]): List of image data.
 
         Returns:
-            List[bytes]: List of unique image data.
+            List[bytes]: Unique images.
         """
         seen_hashes = set()
         unique_images = []
@@ -90,20 +97,27 @@ class PDFExtractor(DocumentExtractor):
 
 
 class PlainTextExtractor(DocumentExtractor):
+    """
+    Extracts text from plain text files.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
+        # Decode text content and return an empty image list
         return buffer.decode("utf-8", errors="replace"), []
 
 
 class WordExtractor(DocumentExtractor):
+    """
+    Extracts text and images from DOCX files.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
-        """Extract text and images from a DOCX file."""
         try:
-            # Extract text
-            text = ""
+            # Extract text from paragraphs
             doc = Document(io.BytesIO(buffer))
             text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
 
-            # Extract images
+            # Extract images from the DOCX archive
             images = []
             with ZipFile(io.BytesIO(buffer)) as docx_zip:
                 for file_name in docx_zip.namelist():
@@ -116,12 +130,17 @@ class WordExtractor(DocumentExtractor):
         except BadZipFile:
             raise ValueError("The provided file is not a valid Word file (DOCX).")
         except Exception as e:
-            raise RuntimeError(f"An error occurred while processing the Word file: {e}")
+            raise RuntimeError(f"Error processing Word file: {e}")
 
 
 class LegacyWordExtractor(DocumentExtractor):
+    """
+    Extracts text and images from legacy Word files (DOC).
+    Converts DOC files to PDF for extraction.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
-        """Extract text and images from a legacy Word file (DOC)."""
+        # Write the DOC file to a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".doc") as temp_input:
             temp_input.write(buffer)
             temp_input.flush()
@@ -138,10 +157,10 @@ class LegacyWordExtractor(DocumentExtractor):
             except subprocess.CalledProcessError as e:
                 raise RuntimeError(f"unoconv failed: {e.stderr.decode()}")
             finally:
-                # Always clean up the input file
+                # Clean up the temporary input file
                 os.unlink(temp_input.name)
 
-            # Use the existing PDFExtractor to extract text and images
+            # Extract text and images from the converted PDF
             try:
                 with open(temp_output_pdf, "rb") as pdf_file:
                     pdf_buffer = pdf_file.read()
@@ -156,25 +175,31 @@ class LegacyWordExtractor(DocumentExtractor):
 
 
 class RTFExtractor(DocumentExtractor):
+    """
+    Extracts text from RTF files.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
-        """Extract text from an RTF file."""
         try:
-            # Decode RTF content to plain text
+            # Convert RTF content to plain text
             text = rtf_to_text(buffer.decode("utf-8"))
-            images = []  # RTF does not embed images in a directly accessible way
+            images = []  # RTF does not embed images in an accessible way
             return text, images
         except Exception as e:
             raise RuntimeError(f"Failed to extract from RTF file: {e}")
 
 
 class ODTExtractor(DocumentExtractor):
+    """
+    Extracts text and images from ODT files.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
-        """Extract text and images from an ODT file."""
         try:
-            # Load ODT content
+            # Load the ODT document
             odt_document = load(io.BytesIO(buffer))
 
-            # Extract text
+            # Extract text from paragraphs
             paragraphs = odt_document.getElementsByType(P)
             text = "\n".join(
                 "".join(
@@ -185,15 +210,13 @@ class ODTExtractor(DocumentExtractor):
                 for p in paragraphs
             )
 
-            # Extract images
+            # Extract images from ODT frames
             images = []
             for frame in odt_document.getElementsByType(Frame):
                 for image in frame.getElementsByType(Image):
                     href = image.getAttribute("href")
                     if href:
-                        images.append(
-                            href
-                        )  # href typically references the image file in the ODT package
+                        images.append(href)
 
             return text, images
         except Exception as e:
@@ -201,22 +224,18 @@ class ODTExtractor(DocumentExtractor):
 
 
 class MarkdownExtractor:
+    """
+    Extracts text and images from Markdown files.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
-        """
-        Extract text and images from a markdown file.
-
-        Parameters:
-        buffer (bytes): The input markdown file content in bytes.
-
-        Returns:
-        Tuple[str, List[bytes]]: A tuple containing the extracted text and a list of images as byte arrays.
-        """
+        # Decode the Markdown content
         markdown_content = buffer.decode("utf-8")
 
-        # Extract all text content excluding image syntax
+        # Extract all text, excluding image syntax
         text = re.sub(r"!\[[^\]]*\]\([^\)]+\)", "", markdown_content)
 
-        # Find all image URLs in markdown
+        # Find all image URLs in Markdown content
         image_urls = re.findall(r"!\[[^\]]*\]\(([^\)]+)\)", markdown_content)
 
         images = []
@@ -232,21 +251,25 @@ class MarkdownExtractor:
 
 
 class XMLExtractor(DocumentExtractor):
+    """
+    Extracts text and images from XML files.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
         # Parse the XML content
         root = ET.fromstring(buffer)
 
-        # Extract all text content
+        # Extract text from all elements
         text_content = []
         for elem in root.iter():
             if elem.text:
                 text_content.append(elem.text.strip())
 
-        # Check for images (URLs or base64)
+        # Extract images (URLs or base64 encoded)
         images = []
         for elem in root.iter():
-            if "image" in elem.tag.lower():  # Look for image-related tags
-                # Handle URLs
+            if "image" in elem.tag.lower():
+                # Handle image URLs
                 if elem.text and elem.text.startswith(("http://", "https://")):
                     try:
                         response = requests.get(elem.text)
@@ -261,31 +284,33 @@ class XMLExtractor(DocumentExtractor):
                     except Exception as e:
                         print(f"Failed to decode base64 image: {e}")
 
-        # Join text content and return results
         return "\n".join(text_content), images
 
 
 class HTMLExtractor(DocumentExtractor):
+    """
+    Extracts text and images from HTML files.
+    """
+
     def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
-        # Parse HTML with BeautifulSoup
+        # Parse HTML content using BeautifulSoup
         soup = BeautifulSoup(buffer, "html.parser")
 
         # Extract text content
         text_content = soup.get_text(separator="\n", strip=True)
 
-        # Extract image data
+        # Extract images from <img> tags
         images = []
         for img_tag in soup.find_all("img"):
             img_src = img_tag.get("src")
             if img_src:
-                if img_src.startswith("data:image"):  # Handle base64-encoded images
+                if img_src.startswith("data:image"):  # Handle base64 images
                     try:
-                        # Extract base64 content and decode it
                         base64_data = img_src.split(",")[1]
                         images.append(base64.b64decode(base64_data))
                     except Exception as e:
-                        print(f"Failed to decode base64 image.")
-                elif img_src.startswith(("http://", "https://")):  # Handle regular image URLs
+                        print("Failed to decode base64 image.")
+                elif img_src.startswith(("http://", "https://")):  # Handle image URLs
                     try:
                         response = requests.get(img_src)
                         response.raise_for_status()

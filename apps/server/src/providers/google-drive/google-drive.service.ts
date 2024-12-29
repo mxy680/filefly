@@ -13,7 +13,6 @@ import { ProducerService } from 'src/producer/producer.service';
 @Injectable()
 export class GoogleDriveService {
     constructor(
-        private readonly prismaService: PrismaService,
         private readonly prismaFileService: GoogleDrivePrismaService,
         private readonly producerService: ProducerService,
     ) { }
@@ -26,7 +25,15 @@ export class GoogleDriveService {
     }
 
     async upload(file: GoogleDriveFile, accessToken: string, userId: number): Promise<void> {
-        await this.prismaFileService.upsertFile(userId, file);
+        // Try to create the file 
+        try {
+            await this.prismaFileService.createFile(userId, file);
+        } catch (error) {
+            if (error.code === 'P2002') {
+                // File already exists, assume deduplication
+                return;
+            }
+        }
 
         this.producerService.sendVectorizationTask({
             provider: 'google',

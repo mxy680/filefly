@@ -47,4 +47,4 @@ scripts/commands.txt
 __pycache__/
 
 # Notebooks
-notebook/
+notebooks/

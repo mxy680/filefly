@@ -35,7 +35,6 @@ def read_root():
 @app.post("/ocr/")
 async def perform_ocr(file: UploadFile = File(...)):
     # Read file contents into memory
-    print(f"Received file: {file.filename}")
     try:
         file_bytes = await file.read()
 

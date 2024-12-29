@@ -9,7 +9,7 @@ from app.processors.function_map import mime_processing_map
 import weaviate
 import os
 import base64
-from typing import Tuple, List
+
 
 def recursive_vectorization(task: dict, buffer: bytes, idx: int) -> None:
     """
