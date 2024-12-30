@@ -85,14 +85,12 @@ export class GoogleDriveService {
             if (changeType === 'file') {
                 if (removed || file?.trashed) {
                     // File is permanently deleted or access was revoked
-                    console.log('Deleting file:', file?.name);
                     await this.prismaFileService.deleteFile(userId, file?.id);
                 }
                 else {
                     const fileHashExists = await this.prismaFileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
                     if (!fileHashExists) {
                         // File is new or updated
-                        console.log("Attempting to upload file:", file?.name);
                         await this.upload(file as GoogleDriveFile, accessToken, userId);
                     }
                 }

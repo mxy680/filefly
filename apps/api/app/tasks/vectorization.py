@@ -66,7 +66,7 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None) -> None:
     # Validate access token
     if not accessToken:
         raise ValueError("Access token is empty or invalid")
-
+    
     # Connect to the Weaviate instance
     try:
         client = weaviate.connect_to_local(
