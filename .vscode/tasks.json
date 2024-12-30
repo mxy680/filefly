@@ -16,7 +16,7 @@
         {
             "label": "Reset Postgres Database",
             "type": "shell",
-            "command": "cd apps/server || exit && pnpx prisma migrate reset --force --skip-seed"
+            "command": "cd packages/database || exit && pnpx prisma migrate reset --force --skip-seed --schema=prisma/schemajs.prisma && pnpx prisma db push --schema=prisma/schemajs.prisma",
         }
     ]
   }
