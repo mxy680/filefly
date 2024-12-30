@@ -1,0 +1,86 @@
+generator client {
+  provider      = "prisma-client-py"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  providers Provider[]
+  sessions  Session[]
+
+  // Google Drive
+  googleDriveWebhooks GoogleDriveWebhook[]
+  googleDriveFiles    GoogleDriveFile[]
+}
+
+model Provider {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  provider     String
+  providerId   String // Unique ID from the provider (e.g., Google user ID)
+  accessToken  String
+  refreshToken String
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerId]) // Unique combination of provider and providerId
+  @@unique([provider, accessToken]) // Unique combination of provider and accessToken
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+  accessToken  String?  @unique // Unique session token
+  refreshToken String?  @unique // Unique refresh token for session renewal
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+// Google Drive
+model GoogleDriveWebhook {
+  id          String   @id @default(cuid())
+  userId      Int      @unique
+  channelId   String   @unique
+  resourceId  String   @unique
+  accessToken String   @unique
+  pageToken   String
+  expiration  DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, accessToken])
+}
+
+model GoogleDriveFile {
+  id            String    @id // Google Drive file ID
+  name          String
+  mimeType      String
+  webViewLink   String? // Optional link to view the file online
+  thumbnailLink String? // Optional thumbnail URL
+  iconLink      String? // Optional icon URL
+  size          Int?
+  sha1          String?
+  sha256        String?
+  md5           String?
+  createdTime   DateTime?
+  modifiedTime  DateTime?
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId]) // Index to speed up queries by user
+}

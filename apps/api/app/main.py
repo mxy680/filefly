@@ -1,11 +1,19 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from app.rabbitmq import start_rabbitmq_consumer
-import weaviate
-import os
-from app.tasks.vectorization import handle_vectorization_task
+from prisma import Prisma
 
-app = FastAPI()
 
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic here
+    await db.connect()
     await start_rabbitmq_consumer()
+    yield
+    
+    # Shutdown logic here
+    await db.disconnect()
+    
+
+app = FastAPI(lifespan=lifespan)
+db = Prisma()

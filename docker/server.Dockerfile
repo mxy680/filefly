@@ -28,7 +28,7 @@ COPY packages/database/prisma ./packages/database/prisma
 WORKDIR /app/apps/server
 
 # Generate Prisma Client
-RUN pnpx prisma generate --schema=../../packages/database/prisma/schema.prisma
+RUN pnpx prisma generate --schema=../../packages/database/prisma/schemajs.prisma
 
 # Build the application
 RUN pnpm run build
