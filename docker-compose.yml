@@ -2,12 +2,10 @@ services:
   # ---------------------------------------- Apps ----------------------------------------
   api:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./docker/api.Dockerfile
     ports:
       - "8000:8000"
-    volumes:
-      - ./apps/api:/app
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -23,8 +21,8 @@ services:
 
   server:
     build:
-      context: ./apps/server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./docker/server.Dockerfile
     ports:
       - "4000:4000"
     depends_on:
@@ -40,7 +38,7 @@ services:
   web:
     build:
       context: ./apps/web
-      dockerfile: Dockerfile
+      dockerfile: ../../docker/web.Dockerfile
     ports:
       - "3000:3000"
     depends_on: 
@@ -92,7 +90,7 @@ services:
   rabbitmq:
     build:
       context: ./packages/rabbitmq
-      dockerfile: Dockerfile
+      dockerfile: ../../docker/rmq.Dockerfile
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -112,7 +110,7 @@ services:
   ocr:
     build:
       context: ./packages/ocr
-      dockerfile: Dockerfile
+      dockerfile: ../../docker/ocr.Dockerfile
     ports:
       - "9000:9000"
     restart: always

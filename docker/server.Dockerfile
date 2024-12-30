@@ -5,23 +5,30 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies and OpenSSL
+# Install OpenSSL
 RUN apk add --no-cache openssl && ln -s /usr/lib/libssl.so.1.1 /usr/lib/libssl.so || true
 
-# Copy package.json and pnpm-lock.yaml
-COPY ./package.json ./pnpm-lock.yaml ./
+# Copy workspace and server-specific package files
+COPY pnpm-workspace.yaml ./
+COPY apps/server/package.json apps/server/pnpm-lock.yaml ./
 
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Install dependencies
+# Install dependencies for the server
 RUN pnpm install --frozen-lockfile
 
-# Copy the entire application code (including Prisma schema)
-COPY . .
+# Copy server source code
+COPY apps/server ./apps/server
+
+# Copy Prisma schema
+COPY packages/database/prisma ./packages/database/prisma
+
+# Set working directory to the server context
+WORKDIR /app/apps/server
 
 # Generate Prisma Client
-RUN pnpm prisma generate --schema=./prisma/schema.prisma
+RUN pnpx prisma generate --schema=../../packages/database/prisma/schema.prisma
 
 # Build the application
 RUN pnpm run build
@@ -36,16 +43,12 @@ WORKDIR /app
 # Install OpenSSL
 RUN apk add --no-cache openssl && ln -s /usr/lib/libssl.so.1.1 /usr/lib/libssl.so || true
 
-# Copy the compiled application
-COPY --from=builder /app/dist ./dist
-
-# Copy node_modules
+# Copy compiled dist, dependencies, and package.json
+COPY --from=builder /app/apps/server/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/server/package.json ./
 
-# Copy package.json for runtime dependencies
-COPY --from=builder /app/package.json ./
-
-# Expose the application port
+# Expose application port
 EXPOSE 4000
 
 # Start the application
