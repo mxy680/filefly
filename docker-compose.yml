@@ -59,7 +59,6 @@ services:
     image: cr.weaviate.io/semitechnologies/weaviate:1.28.1
     ports:
       - 8080:8080
-      - 50051:50051
     volumes:
       - weaviate_data:/var/lib/weaviate
     environment:

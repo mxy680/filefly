@@ -3,6 +3,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaIoBaseDownload
 from app.db.postgres.client import db
 import io
+import weaviate
 
 
 # function to load google drive
@@ -63,5 +64,33 @@ async def load_file(fileId: str, userId: int) -> tuple[bytes, dict]:
             }
 
             return buffer, args
+    except Exception as e:
+        raise ValueError(f"Failed to load file: {e}")
+    
+    
+async def load_file_args(fileId: str, userId: int) -> dict:
+    try:
+        response = await db.googledrivefile.find_first(
+            where={
+                "userId": userId,
+                "id": fileId,
+            }
+        )
+
+        if response.mimeType.startswith("application/vnd.google-apps"):
+            # File is a Google Workspace file (e.g., Docs, Sheets, Slides)
+            # Export the file to a downloadable format
+            pass
+        else:
+            args = {
+                "mimeType": response.mimeType,
+                "fileName": response.name,
+                "provider": "google",
+                "fileId": fileId,
+                "hash": response.sha256,
+                "size": response.size,
+            }
+
+            return args
     except Exception as e:
         raise ValueError(f"Failed to load file: {e}")

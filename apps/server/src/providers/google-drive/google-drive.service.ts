@@ -37,9 +37,22 @@ export class GoogleDriveService {
                 }
             }
 
+            console.log('Uploading file to Weaviate:', file.id);
             // Assume file is new and needs to be uploaded
-            this.producerService.sendVectorizationTask('google-drive', file.id, userId);
+            this.producerService.sendVectorizationTask('google', file.id, userId);
         }
+    }
+
+    async delete(file: GoogleDriveFile, userId: number): Promise<void> {
+        // Check if the file exists 
+        const fileExists = await this.prismaFileService.fileExists(userId, file.id);
+        if (!fileExists) {
+            return;
+        }
+
+        // Delete from weaviate db
+        console.log('Deleting file from Weaviate:', file.id);
+        this.producerService.sendDeletionTask('google', file.id, userId);
     }
 
     async uploadDrive(accessToken: string, userId: number) {
@@ -79,7 +92,7 @@ export class GoogleDriveService {
             if (changeType === 'file') {
                 if (removed || file?.trashed) {
                     // File is permanently deleted or access was revoked
-                    await this.prismaFileService.deleteFile(userId, file?.id);
+                    await this.delete(file as GoogleDriveFile, userId);
                 }
                 else {
                     // File was added or modified

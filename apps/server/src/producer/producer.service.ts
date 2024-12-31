@@ -22,4 +22,22 @@ export class ProducerService {
       throw error;
     }
   }
+
+  sendDeletionTask(provider: string, fileId: string, userId: number): void {
+    try {
+      this.amqpConnection.request<{ fileId: string, userId: number, provider: string }>({
+        exchange: 'processing-exchange',
+        routingKey: 'deletion-task',
+        payload: {
+          fileId: fileId,
+          userId: userId,
+          provider: provider
+        },
+        timeout: 1000000
+      });
+    } catch (error) {
+      console.error('Failed to send deletion task:', error);
+      throw error;
+    }
+  }
 }

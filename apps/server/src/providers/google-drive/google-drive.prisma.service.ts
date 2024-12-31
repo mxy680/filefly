@@ -7,6 +7,14 @@ import { GoogleDriveFile } from './google-drive.types';
 export class GoogleDrivePrismaService {
     constructor(private readonly prisma: PrismaService) { }
 
+    async fileExists(userId: number, fileId: string): Promise<boolean> {
+        const file = await this.prisma.googleDriveFile.findFirst({
+            where: { userId, id: fileId }
+        });
+
+        return !!file;
+    }
+
     async createFile(userId: number, file: GoogleDriveFile) {
         await this.prisma.googleDriveFile.create({
             data: {

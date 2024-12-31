@@ -1,6 +1,9 @@
-import weaviate
-import os
+from app.db.vector.client import get_client
+from app.providers.google import load_file_args as load_google_file_args
 from app.db.postgres.client import db
+from app.processors.function_map import get_extractor
+from weaviate.classes.query import Filter
+
 
 async def handle_deletion_task(task: dict) -> None:
     """
@@ -10,22 +13,58 @@ async def handle_deletion_task(task: dict) -> None:
         task (dict): Task details including provider, fileId, and metadata.
     """
     # Extract task details
-    fileId = task.get("fileId")
+    fileId: str = task.get("fileId")
+    userId: int = task.get("userId")
+    provider: str = task.get("provider")
 
     # Initialize Weaviate client
-    try:
-        client = weaviate.connect_to_local(
-            host=os.getenv("WEAVIATE_HOST"),
-            port=8080,
-            grpc_port=50051,
-            headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")},
-        )
-    except Exception as e:
-        raise ValueError(f"Failed to connect to Weaviate: {e}")
+    client = get_client()
 
-    # Delete the content
+    # Get the file information
+    match provider:
+        case "google":
+            args = await load_google_file_args(fileId, userId)
+        case _:
+            raise ValueError("Provider is not supported")
+
+    # Get the extractor from the MIME type
+    mime_type = args.get("mimeType")
+    extractor = get_extractor(mime_type)
+
+    # Get the collection
+    collection = client.collections.get(extractor.file_type)
+
+    # Delete the object from Weaviate
     try:
-       
-        print(f"Deleted {fileId} from Weaviate")
-    except weaviate.exceptions.WeaviateException as exc:
-        print(f"Failed to delete {fileId} from Weaviate: {exc}")
+        # Get the objects with the given args
+        response = collection.query.fetch_objects(
+            filters=(
+                Filter.by_property("fileId").equal(fileId)
+                & Filter.by_property("provider").equal(provider)
+                & Filter.by_property("fileName").equal(args.get("fileName"))
+                & Filter.by_property("hash").equal(args.get("hash"))
+                & Filter.by_property("size").equal(args.get("size"))
+            )
+        )
+
+        if len(response.objects) == 0:
+            raise ValueError("Object not found in Weaviate")
+        elif len(response.objects) > 1:
+            raise ValueError("Multiple objects found in Weaviate")
+
+        # Delete the object
+        object = response.objects[0]
+        collection.data.delete_by_id(object.uuid)
+        
+        # Delete the object from postgres
+        await db.googledrivefile.delete(
+            where={
+                "userId": userId,
+                "id": fileId,
+            }
+        )
+        
+        print(f"Object with ID {object.uuid} deleted successfully")
+
+    except Exception as e:
+        print(f"Failed to delete object: {e}")

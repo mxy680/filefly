@@ -30,14 +30,14 @@ const Dashboard = () => {
     }
   };
 
-  // // Run printChanges every second
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     printChanges();
-  //   }, 1000); // Call every 1000ms (1 second)
+  // Run printChanges every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      printChanges();
+    }, 1000); // Call every 1000ms (1 second)
 
-  //   return () => clearInterval(interval); // Cleanup interval on component unmount
-  // }, []); // Empty dependency array to run only once on mount
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []); // Empty dependency array to run only once on mount
 
   return (
     <div>
