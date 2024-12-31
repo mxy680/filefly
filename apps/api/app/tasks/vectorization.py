@@ -64,7 +64,7 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None) -> None:
     extractor = get_extractor(mime_type)
 
     # Check if the file already exists in the database
-    if exists(weaviate_client, extractor.file_type, fileId, hash):
+    if exists(weaviate_client, extractor.file_type, fileId, args.get("hash")):
         weaviate_client.close()
         return None
 

@@ -3,7 +3,8 @@
 	"version": "1.0.0",
 	"description": "FastAPI application containerized with Docker and managed with Poetry.",
 	"scripts": {
-	  "dev": "poetry run python bootstrap/init.py && poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+	  	"build": "poetry run prisma generate --schema=./prisma/schema.prisma",
+    	"dev": "poetry run uvicorn apps.api.app.main:app --host 0.0.0.0 --port 8000"
 	},
 	"keywords": [],
 	"author": "",

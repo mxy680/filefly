@@ -32,6 +32,7 @@ aio-pika = "^9.5.4"
 olefile = "^0.47"
 cairosvg = "^2.7.1"
 prisma = "^0.15.0"
+pydantic = "^2.10.4"
 
 [build-system]
 requires = ["poetry-core"]
