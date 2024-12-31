@@ -1,6 +1,10 @@
 {
 	"name": "filefly",
 	"private": true,
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev"
+	},
 	"devDependencies": {
 		"@prisma/client": "6.1.0",
 		"prettier": "^3.2.5",

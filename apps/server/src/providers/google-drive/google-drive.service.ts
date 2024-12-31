@@ -24,29 +24,22 @@ export class GoogleDriveService {
         return { drive, client };
     }
 
-    async upload(file: GoogleDriveFile, accessToken: string, userId: number): Promise<void> {
-        // Try to create the file 
-        try {
-            await this.prismaFileService.createFile(userId, file);
-        } catch (error) {
-            if (error.code === 'P2002') {
-                // File already exists, assume deduplication
-                return;
+    async upload(file: GoogleDriveFile, userId: number): Promise<void> {
+        const fileHashExists = await this.prismaFileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
+        if (!fileHashExists) {
+            // Try to create the file 
+            try {
+                await this.prismaFileService.createFile(userId, file as GoogleDriveFile);
+            } catch (error) {
+                if (error.code === 'P2002') {
+                    // File already exists, assume deduplication
+                    return;
+                }
             }
-        }
 
-        this.producerService.sendVectorizationTask({
-            provider: 'google',
-            fileId: file?.id as string,
-            fileName: file?.name as string,
-            accessToken,
-            mimeType: file?.mimeType as string,
-            hash: file?.sha256Checksum as string,
-            metaData: {
-                size: file?.size as unknown as number,
-                modifiedTime: file?.modifiedTime as string,
-            },
-        });
+            // Assume file is new and needs to be uploaded
+            this.producerService.sendVectorizationTask('google-drive', file.id, userId);
+        }
     }
 
     async uploadDrive(accessToken: string, userId: number) {
@@ -65,8 +58,9 @@ export class GoogleDriveService {
                     fields: '*',
                 });
 
-                await this.upload(file.data as GoogleDriveFile, accessToken, userId);
+                await this.upload(file.data as GoogleDriveFile, userId);
             }));
+
         } catch (error) {
             console.error('Error retrieving files:', error.message);
             throw new Error('Failed to retrieve Google Drive files');
@@ -88,11 +82,8 @@ export class GoogleDriveService {
                     await this.prismaFileService.deleteFile(userId, file?.id);
                 }
                 else {
-                    const fileHashExists = await this.prismaFileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
-                    if (!fileHashExists) {
-                        // File is new or updated
-                        await this.upload(file as GoogleDriveFile, accessToken, userId);
-                    }
+                    // File was added or modified
+                    await this.upload(file as GoogleDriveFile, userId);
                 }
             }
         }));

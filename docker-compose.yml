@@ -6,6 +6,8 @@ services:
       dockerfile: ./docker/api.Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - ./apps/api:/app/apps/api # Mount your local code into the container
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -18,6 +20,7 @@ services:
       PYTHONUNBUFFERED: 1
     networks:
       - shared-network
+    command: sh -c "poetry run python apps/api/bootstrap/init.py && poetry run uvicorn apps.api.app.main:app --host 0.0.0.0 --port 8000"
 
   server:
     build:
@@ -41,7 +44,7 @@ services:
       dockerfile: ../../docker/web.Dockerfile
     ports:
       - "3000:3000"
-    depends_on: 
+    depends_on:
       - api
       - server
     env_file:

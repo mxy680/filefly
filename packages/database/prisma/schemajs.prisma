@@ -33,6 +33,7 @@ model Provider {
 
   @@unique([provider, providerId]) // Unique combination of provider and providerId
   @@unique([provider, accessToken]) // Unique combination of provider and accessToken
+  @@unique([provider, userId]) // Unique combination of provider and refreshToken
 }
 
 model Session {

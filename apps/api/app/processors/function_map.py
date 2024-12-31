@@ -34,3 +34,17 @@ mime_processing_map = {
     "image/gif": GraphicsInterchangeFormatExtractor(),
     "image/svg+xml": ScalableVectorGraphicsExtractor(),
 }
+
+
+def get_extractor(mime_type: str):
+    """
+    Get the appropriate extractor for the MIME type.
+
+    Args:
+        mime_type (str): The MIME type of the content.
+    """
+    extractor = mime_processing_map.get(mime_type)
+    if not extractor:
+        raise ValueError("MIME type not supported")
+    
+    return extractor

@@ -21,9 +21,9 @@ schemas = [
                 description="The main text content of the document.",
             ),
             Property(
-                name="metadata",
-                data_type=DataType.TEXT,
-                description="Additional metadata about the document.",
+                name="size",
+                data_type=DataType.INT,
+                description="The size of the document in bytes.",
             ),
             Property(
                 name="hash",
@@ -76,14 +76,9 @@ schemas = [
                 description="A textual description or caption of the image.",
             ),
             Property(
-                name="tags",
-                data_type=DataType.TEXT_ARRAY,
-                description="Tags associated with the image for categorization.",
-            ),
-            Property(
-                name="metadata",
+                name="size",
                 data_type=DataType.TEXT,
-                description="Additional metadata about the image.",
+                description="The size of the image in bytes.",
             ),
             Property(
                 name="hash",
@@ -136,9 +131,9 @@ schemas = [
                 description="The format of the dataset (e.g., CSV, JSON, Parquet).",
             ),
             Property(
-                name="metadata",
+                name="size",
                 data_type=DataType.TEXT,
-                description="Additional metadata about the dataset.",
+                description="The size of the dataset in bytes.",
             ),
             Property(
                 name="hash",
@@ -198,19 +193,14 @@ schemas = [
                 description="The programming language of the code (e.g., Python, JavaScript).",
             ),
             Property(
-                name="tags",
-                data_type=DataType.TEXT_ARRAY,
-                description="Tags associated with the code (e.g., backend, machine learning).",
-            ),
-            Property(
                 name="dependencies",
                 data_type=DataType.TEXT_ARRAY,
                 description="Dependencies or libraries used in the code.",
             ),
             Property(
-                name="metadata",
-                data_type=DataType.TEXT,
-                description="Additional metadata about the code, such as version or authorship.",
+                name="size",
+                data_type=DataType.INT,
+                description="The size of the code in bytes.",
             ),
             Property(
                 name="hash",

@@ -1,5 +1,6 @@
 import weaviate
 import os
+from app.db.postgres.client import db
 
 async def handle_deletion_task(task: dict) -> None:
     """

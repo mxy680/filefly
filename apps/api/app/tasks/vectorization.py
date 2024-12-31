@@ -1,10 +1,11 @@
-from app.loaders.google import (
+from apps.api.app.loaders.google import (
     load_drive as load_google_drive,
     load_file as load_google_file,
 )
-from app.db.insertion import insert, insert_chunks, exists
+from apps.api.app.db.vector.insertion import insert, insert_chunks, exists
 from utils.chunking import chunkify_text
-from app.processors.function_map import mime_processing_map
+from app.processors.function_map import get_extractor
+from app.db.vector.client import get_client
 
 import weaviate
 import os
@@ -44,62 +45,27 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None) -> None:
     """
     # Extract task details
     fileId = task.get("fileId")
+    userId = task.get("userId")
     provider = task.get("provider")
-    accessToken = task.get("accessToken")
-    mimeType = task.get("mimeType")
-    fileName = task.get("fileName")
-    metadata = task.get("metaData")
-    hash = task.get("hash")
 
-    # Format metadata if provided
-    if metadata:
-        metadata = " ".join([f"{k}: {v}" for k, v in metadata.items()])
-
-    args = {
-        "fileName": fileName,
-        "metadata": metadata,
-        "provider": provider,
-        "fileId": fileId,
-        "hash": hash,
-    }
-
-    # Validate access token
-    if not accessToken:
-        raise ValueError("Access token is empty or invalid")
-    
-    # Connect to the Weaviate instance
-    try:
-        client = weaviate.connect_to_local(
-            host=os.getenv("WEAVIATE_HOST"),
-            port=8080,
-            grpc_port=50051,
-            headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")},
-        )
-    except Exception as e:
-        raise ValueError(f"Failed to connect to Weaviate: {e}")
+    # Get the weaviate client
+    weaviate_client = get_client()
 
     # Load file buffer if not already provided
     if not buffer:
         match provider:
-            case "google":
-                drive = load_google_drive(accessToken)
-                buffer, mimeType = load_google_file(fileId, drive, mimeType)
+            case "google-drive":
+                buffer, args = await load_google_file(fileId, userId)
             case _:
                 raise ValueError("Provider is not supported")
 
-    # Ensure buffer is loaded
-    if not buffer:
-        raise ValueError("Failed to load file")
-
     # Fetch the appropriate extractor for the MIME type
-    extractor = mime_processing_map.get(mimeType)
-    if not extractor:
-        raise ValueError("MIME type not supported")
+    mime_type = args.get("mimeType")
+    extractor = get_extractor(mime_type)
 
     # Check if the file already exists in the database
-    if exists(client, extractor.file_type, fileId, hash):
-        print(f"Object with fileId '{fileId}' already exists.")
-        client.close()
+    if exists(weaviate_client, extractor.file_type, fileId, hash):
+        weaviate_client.close()
         return None
 
     # Process documents
@@ -115,9 +81,9 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None) -> None:
         chunks = chunkify_text(text)
         if len(chunks) > 1:
             args["chunks"] = chunks
-            insert_chunks(client, extractor.file_type, args)
+            insert_chunks(weaviate_client, extractor.file_type, args)
         else:
-            insert(client, extractor.file_type, args)
+            insert(weaviate_client, extractor.file_type, args)
 
         # Process each extracted image recursively
         for idx, image_buffer in enumerate(images):
@@ -131,9 +97,9 @@ async def handle_vectorization_task(task: dict, buffer: bytes = None) -> None:
         args["imageData"] = base64.b64encode(buffer).decode("utf-8")
 
         print(f"Extracted Text: {text}")
-        insert(client, "Image", args)
+        insert(weaviate_client, "Image", args)
 
     # Close the Weaviate client connection
-    client.close()
+    weaviate_client.close()
 
     return None

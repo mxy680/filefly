@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.rabbitmq import start_rabbitmq_consumer
-from prisma import Prisma
-
+from app.db.postgres.client import db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,4 +15,3 @@ async def lifespan(app: FastAPI):
     
 
 app = FastAPI(lifespan=lifespan)
-db = Prisma()
