@@ -77,7 +77,7 @@ schemas = [
             ),
             Property(
                 name="size",
-                data_type=DataType.TEXT,
+                data_type=DataType.INT,
                 description="The size of the image in bytes.",
             ),
             Property(
@@ -132,7 +132,7 @@ schemas = [
             ),
             Property(
                 name="size",
-                data_type=DataType.TEXT,
+                data_type=DataType.INT,
                 description="The size of the dataset in bytes.",
             ),
             Property(
