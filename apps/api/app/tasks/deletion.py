@@ -1,9 +1,7 @@
 from app.db.vector.client import get_client
-from app.providers.google import load_file_args as load_google_file_args
-from app.db.postgres.client import db
 from app.processors.function_map import get_extractor
+from app.db.postgres.delete import delete_google_file
 from weaviate.classes.query import Filter
-
 
 async def handle_deletion_task(task: dict) -> None:
     """
@@ -20,12 +18,15 @@ async def handle_deletion_task(task: dict) -> None:
     # Initialize Weaviate client
     client = get_client()
 
-    # Get the file information
+    # Delete the object from postgres
     match provider:
         case "google":
-            args = await load_google_file_args(fileId, userId)
+            args = await delete_google_file(fileId, userId)
         case _:
             raise ValueError("Provider is not supported")
+        
+    # Return if no args are returned (file does not exist in the database)
+    if not args: return
 
     # Get the extractor from the MIME type
     mime_type = args.get("mimeType")
@@ -37,7 +38,7 @@ async def handle_deletion_task(task: dict) -> None:
     # Delete the object from Weaviate
     try:
         # Get the objects with the given args
-        response = collection.query.fetch_objects(
+        res = collection.query.fetch_objects(
             filters=(
                 Filter.by_property("fileId").equal(fileId)
                 & Filter.by_property("provider").equal(provider)
@@ -47,23 +48,15 @@ async def handle_deletion_task(task: dict) -> None:
             )
         )
 
-        if len(response.objects) == 0:
+        if len(res.objects) == 0:
             raise ValueError("Object not found in Weaviate")
-        elif len(response.objects) > 1:
+        elif len(res.objects) > 1:
             raise ValueError("Multiple objects found in Weaviate")
 
         # Delete the object
-        object = response.objects[0]
+        object = res.objects[0]
         collection.data.delete_by_id(object.uuid)
-        
-        # Delete the object from postgres
-        await db.googledrivefile.delete(
-            where={
-                "userId": userId,
-                "id": fileId,
-            }
-        )
-        
+
         print(f"Object with ID {object.uuid} deleted successfully")
 
     except Exception as e:

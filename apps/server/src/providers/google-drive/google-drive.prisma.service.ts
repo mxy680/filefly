@@ -70,7 +70,7 @@ export class GoogleDrivePrismaService {
     }
 
     async deleteFile(userId: number, fileId: string) {
-        await this.prisma.googleDriveFile.deleteMany({
+        return await this.prisma.googleDriveFile.deleteMany({
             where: { userId, id: fileId }
         });
     }
