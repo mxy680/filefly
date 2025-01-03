@@ -1,6 +1,5 @@
 import weaviate
-from utils.embedding import embed_text_chunks
-from app.db.vector.methods import exists
+from app.db.vector.methods import embed_text_chunks, calculate_cost
 
 def insert(client: weaviate.WeaviateClient, name: str, args: dict):
     """
@@ -19,11 +18,16 @@ def insert(client: weaviate.WeaviateClient, name: str, args: dict):
         # Get the collection
         if not client.collections.exists(name):
             raise ValueError(f"Collection '{name}' does not exist.")
+        
+        # Get the token count and cost
+        token_count = len(args["content"].split())
+        cost = calculate_cost(token_count)
 
         # Insert the data
         collection = client.collections.get(name)
         object_uuid = collection.data.insert(args)
         print(f"Inserted object into '{name}' with UUID: {object_uuid}")
+        print(f"Cost for embedding: ${cost}")
         return object_uuid
 
     except Exception as e:
@@ -48,6 +52,10 @@ def insert_chunks(client: weaviate.WeaviateClient, name: str, args: dict):
         # Get the collection
         if not client.collections.exists(name):
             raise ValueError(f"Collection '{name}' does not exist.")
+        
+        # Calculate the cost
+        token_count = sum(len(chunk.split()) for chunk in args["chunks"])
+        cost = calculate_cost(token_count)
 
         # Embed the text chunks
         embedding = embed_text_chunks(args["chunks"])
@@ -57,6 +65,7 @@ def insert_chunks(client: weaviate.WeaviateClient, name: str, args: dict):
         object_uuid = collection.data.insert(args, vector=embedding)
 
         print(f"Inserted chunked object into '{name}' with UUID: {object_uuid}")
+        print(f"Cost for embedding: ${cost}")
         return object_uuid
 
     except Exception as e:

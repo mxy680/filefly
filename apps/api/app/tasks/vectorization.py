@@ -1,5 +1,6 @@
-from apps.api.app.providers.google import load_file as load_google_file
-from apps.api.app.db.vector.insertion import insert, insert_chunks, exists
+from app.providers.google import load_file as load_google_file
+from app.db.vector.insertion import insert, insert_chunks
+from app.db.vector.methods import exists
 from utils.chunking import chunkify_text
 from app.processors.function_map import get_extractor
 from app.db.vector.client import get_client
