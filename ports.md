@@ -1,6 +1,7 @@
 Web (Next.js): 3000
 Server (Nest.js): 4000
-API (Fast API): 8000
+Consumer (Fast API): 8000
+API (Fast API): 10000
 RabbitMQ (Package): 5672:5672 & 15672:15672
 Prisma (PostgreSQL): 5432:5432
 Weaviate (VectorDB): 8080:8080 & 50051:50051

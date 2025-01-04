@@ -1,8 +1,9 @@
 import weaviate
 from weaviate.classes.query import Filter
 from openai import OpenAI
-import os 
+import os
 import numpy as np
+import hashlib
 
 def exists(client: weaviate.WeaviateClient, collection: str, fileId: str, hash: str):
     """
@@ -47,18 +48,63 @@ def embed_text_chunks(chunks: list[str]) -> list:
     # Process each chunk
     for chunk in chunks:
         try:
-            embeddings.append(client.embeddings.create(
-                input=chunk,
-                model="text-embedding-3-small",
-                dimensions=512
-            ).data[0].embedding)
+            embeddings.append(
+                client.embeddings.create(
+                    input=chunk, model="text-embedding-3-small", dimensions=512
+                )
+                .data[0]
+                .embedding
+            )
         except Exception as e:
             print(f"Failed to embed text chunk: {e}")
 
     # Average the embeddings
-    average_embedding = np.mean(embeddings, axis=0).tolist()    
-    
+    average_embedding = np.mean(embeddings, axis=0).tolist()
+
     return average_embedding
+
+
+def chunkify_text(text: str, max_chunk_size: int = 8192):
+    """
+    Splits a long text string into the largest possible chunks that do not exceed the specified size.
+
+    Args:
+        text (str): The input text to split.
+        max_chunk_size (int): Maximum size of each chunk in characters.
+
+    Returns:
+        list: A list of text chunks.
+    """
+    chunks = []
+
+    # Split text by whitespace to avoid breaking words
+    words = text.split()
+
+    current_chunk = []
+    current_length = 0
+
+    for word in words:
+        # If adding the next word exceeds the max_chunk_size, finalize the current chunk
+        if current_length + len(word) + (1 if current_chunk else 0) > max_chunk_size:
+            chunks.append(" ".join(current_chunk))
+            current_chunk = []
+            current_length = 0
+
+        # Add the word to the current chunk
+        current_chunk.append(word)
+        current_length += len(word) + (1 if current_chunk else 0)  # +1 for the space
+
+    # Add the last chunk if any words remain
+    if current_chunk:
+        chunks.append(" ".join(current_chunk))
+
+    return chunks
+
+
+def hash_buffer(buffer: bytes, algorithm: str = "sha256") -> str:
+    hasher = hashlib.new(algorithm)
+    hasher.update(buffer)
+    return hasher.hexdigest()
 
 
 def calculate_cost(token_count: int) -> float:

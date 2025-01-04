@@ -1,11 +1,13 @@
 import weaviate
 from app.db.vector.methods import embed_text_chunks, calculate_cost
 from app.processors.function_map import get_extractor
-from app.db.vector.methods import exists
-from utils.chunking import chunkify_text
+from app.db.vector.methods import exists, chunkify_text, hash_buffer
 import base64
 
-def insert(client: weaviate.WeaviateClient, buffer: bytes, args: dict, task: dict, callback) -> None:
+
+def insert(
+    client: weaviate.WeaviateClient, buffer: bytes, args: dict, task: dict, callback
+) -> None:
     # Fetch the appropriate extractor for the MIME type
     mime_type = args.get("mimeType")
     extractor = get_extractor(mime_type)
@@ -39,7 +41,60 @@ def insert(client: weaviate.WeaviateClient, buffer: bytes, args: dict, task: dic
                 },
                 image_buffer,
             )
-            
+
+    # Process images
+    elif extractor.file_type == "Image":
+        # Extract text from the image
+        text = extractor.extract(buffer)
+        args["content"] = text
+        args["imageData"] = base64.b64encode(buffer).decode("utf-8")
+
+        insert_object(client, "Image", args)
+
+    # Close the Weaviate client connection
+    client.close()
+
+
+def insert_with_api(
+    client: weaviate.WeaviateClient,
+    buffer: bytes,
+    mime_type: str,
+    file_name: str,
+    callback,
+):
+    # Fetch the appropriate extractor for the MIME type
+    extractor = get_extractor(mime_type)
+
+    # Get the hash of the bytes
+    hash = hash_buffer(buffer)
+
+    # Generate args
+    args = {
+        "fileName": file_name,
+        "size": len(buffer),
+        "hash": hash,
+        "provider": "api",
+        "fileId": hash,
+    }
+
+    # Process documents
+    if extractor.file_type == "Document":
+        # Extract text and images
+        text, images = extractor.extract(buffer)
+        args["content"] = text
+
+        # Chunkify the text and insert into the database
+        chunks = chunkify_text(text)
+        if len(chunks) > 1:
+            args["chunks"] = chunks
+            insert_object_as_chunks(client, extractor.file_type, args)
+        else:
+            insert_object(client, extractor.file_type, args)
+
+        # Process each extracted image recursively
+        for _, image_buffer in enumerate(images):
+            return callback(image_buffer)
+
     # Process images
     elif extractor.file_type == "Image":
         # Extract text from the image
@@ -67,7 +122,7 @@ def insert_object(client: weaviate.WeaviateClient, name: str, args: dict) -> Non
         # Get the collection
         if not client.collections.exists(name):
             raise ValueError(f"Collection '{name}' does not exist.")
-        
+
         # Get the token count and cost
         token_count = len(args["content"].split())
         cost = calculate_cost(token_count)
@@ -83,7 +138,9 @@ def insert_object(client: weaviate.WeaviateClient, name: str, args: dict) -> Non
         return None
 
 
-def insert_object_as_chunks(client: weaviate.WeaviateClient, name: str, args: dict) -> None:
+def insert_object_as_chunks(
+    client: weaviate.WeaviateClient, name: str, args: dict
+) -> None:
     """
     Inserts an object into a Weaviate collection.
 
@@ -97,7 +154,7 @@ def insert_object_as_chunks(client: weaviate.WeaviateClient, name: str, args: di
         # Get the collection
         if not client.collections.exists(name):
             raise ValueError(f"Collection '{name}' does not exist.")
-        
+
         # Calculate the cost
         token_count = sum(len(chunk.split()) for chunk in args["chunks"])
         cost = calculate_cost(token_count)
@@ -115,5 +172,3 @@ def insert_object_as_chunks(client: weaviate.WeaviateClient, name: str, args: di
     except Exception as e:
         print(f"Failed to insert data into collection '{name}': {e}")
         return None
-
-

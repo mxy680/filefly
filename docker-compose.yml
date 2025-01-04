@@ -1,18 +1,33 @@
 services:
   # ---------------------------------------- Apps ----------------------------------------
-  api:
+  consumer:
     build:
       context: .
-      dockerfile: ./docker/api.Dockerfile
+      dockerfile: ./docker/consumer.Dockerfile
     ports:
       - "8000:8000"
-    volumes:
-      - ./apps/api:/app/apps/api # Mount your local code into the container
     depends_on:
       rabbitmq:
         condition: service_healthy
       weaviate:
         condition: service_healthy
+    env_file:
+      - ./apps/consumer/.env
+    environment:
+      NODE_ENV: development
+      PYTHONUNBUFFERED: 1
+    networks:
+      - shared-network
+
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/api.Dockerfile
+    ports:
+      - "10000:10000"
+    depends_on:
+      - consumer
+      - server
     env_file:
       - ./apps/api/.env
     environment:
@@ -20,7 +35,6 @@ services:
       PYTHONUNBUFFERED: 1
     networks:
       - shared-network
-    command: sh -c "poetry run python apps/api/bootstrap/init.py && poetry run uvicorn apps.api.app.main:app --host 0.0.0.0 --port 8000"
 
   server:
     build:
@@ -35,6 +49,7 @@ services:
       - ./apps/server/.env
     environment:
       NODE_ENV: development
+      PYTHONUNBUFFERED: 1
     networks:
       - shared-network
 
@@ -45,7 +60,7 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - api
+      - consumer
       - server
     env_file:
       - ./apps/web/.env

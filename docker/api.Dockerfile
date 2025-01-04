@@ -6,16 +6,15 @@ ENV PYTHONWARNINGS=ignore
 ENV PYTHONPATH=/app/apps/api
 ENV PRISMA_PY_DEBUG_GENERATOR=1
 
-# Install system dependencies for unoconv and LibreOffice
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    gnupg \
     curl \
-    libreoffice \
-    libreoffice-common \
-    python3-uno \
-    ghostscript \
-    poppler-utils \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g prisma@5.17.0 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
 RUN pip install --no-cache-dir poetry
@@ -37,12 +36,11 @@ COPY apps/api ./apps/api
 
 # Copy Prisma schema and environment file
 RUN mkdir -p ./apps/api/prisma
-COPY packages/database/prisma/schemapy.prisma ./apps/api/prisma/schemapy.prisma
+COPY packages/database/prisma ./apps/api/prisma
+COPY packages/database/.env ./apps/api/prisma
 
-# Install Node.js and Prisma CLI (specific version)
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g prisma@5.17.0
+# Print the dir tree of prisma
+RUN ls -R ./apps/api/prisma
 
 # Validate the Prisma schema
 RUN cd ./apps/api/prisma && prisma validate --schema=./schemapy.prisma
@@ -51,7 +49,7 @@ RUN cd ./apps/api/prisma && prisma validate --schema=./schemapy.prisma
 RUN cd ./apps/api/prisma && prisma generate --schema=./schemapy.prisma
 
 # Expose the application port
-EXPOSE 8000
+EXPOSE 10000
 
 # Run the FastAPI application
-CMD ["sh", "-c", "poetry run python apps/api/bootstrap/init.py && poetry run uvicorn apps.api.app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["poetry", "run", "uvicorn", "apps.api.app.main:app", "--host", "0.0.0.0", "--port", "10000"]
