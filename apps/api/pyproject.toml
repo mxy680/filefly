@@ -10,6 +10,8 @@ python = ">=3.11,<3.14"
 fastapi = "^0.115.6"
 uvicorn = "^0.34.0"
 prisma = "^0.15.0"
+aio-pika = "^9.5.4"
+python-multipart = "^0.0.20"
 
 [build-system]
 requires = ["poetry-core"]

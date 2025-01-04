@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
-import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -23,7 +22,7 @@ def validate_token(token: str) -> dict:
     token_data = tokens.get(token)
     if not token_data:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-    if token_data["expires_at"] < datetime.utcnow():
+    if token_data["expires_at"] < datetime.now(datetime.timezone.utc):
         del tokens[token]  # Remove expired token
         raise HTTPException(status_code=401, detail="Token has expired")
     return token_data
