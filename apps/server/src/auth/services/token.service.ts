@@ -32,7 +32,7 @@ export class TokenService {
 
     async isTokenExpired(token: string): Promise<{ expired: boolean; expiry?: number }> {
         try {
-            const decoded = jwt.decode(token, process.env.ACCESS_TOKEN_SECRET) as { exp: number };
+            const decoded = jwt.decode(token) as { exp: number };
             return { expired: false, expiry: decoded.exp };
         } catch (error) {
             if (error instanceof jwt.TokenExpiredError) return { expired: true };

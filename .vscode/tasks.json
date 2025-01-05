@@ -17,6 +17,11 @@
             "label": "Reset Postgres Database",
             "type": "shell",
             "command": "cd packages/database || exit && pnpx prisma migrate reset --force --skip-seed --schema=prisma/schemajs.prisma && pnpx prisma db push --schema=prisma/schemajs.prisma",
+        },
+        {
+            "label": "Test API",
+            "type": "shell",
+            "command": "cd apps/api/app || exit && poetry run python test.py",
         }
     ]
   }

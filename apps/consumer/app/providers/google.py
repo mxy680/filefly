@@ -15,7 +15,7 @@ async def load_drive(userId: int) -> build:
                 "provider": "google",
             }
         )
-        
+
         if not response or not response.accessToken:
             raise ValueError("No access token found for the given user and provider.")
 
@@ -25,8 +25,11 @@ async def load_drive(userId: int) -> build:
         raise ValueError(f"Failed to load Google Drive: {e}")
 
 
-async def load_file(fileId: str, userId: int) -> tuple[bytes, dict]:
+async def load_file(task: dict) -> tuple[bytes, dict]:
     try:
+        userId = task.get("userId")
+        fileId = task.get("fileId")
+
         drive = await load_drive(userId)
         response = await db.googledrivefile.find_first(
             where={
@@ -34,7 +37,7 @@ async def load_file(fileId: str, userId: int) -> tuple[bytes, dict]:
                 "id": fileId,
             }
         )
-                
+
         if not response:
             raise ValueError("File not found in database")
 

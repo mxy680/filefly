@@ -34,6 +34,7 @@ cairosvg = "^2.7.1"
 prisma = "^0.15.0"
 pydantic = "^2.10.4"
 python-multipart = "^0.0.20"
+kombu = "^5.4.2"
 
 [build-system]
 requires = ["poetry-core"]

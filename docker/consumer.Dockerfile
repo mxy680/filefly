@@ -17,6 +17,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Add NodeSource GPG keys
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /usr/share/keyrings/nodesource.gpg
+
+# Add NodeSource to apt sources
+RUN echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+
+# Install Node.js and Prisma CLI (specific version)
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs \
+    && npm install -g prisma@5.17.0 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install Poetry
 RUN pip install --no-cache-dir poetry
 
@@ -39,11 +51,6 @@ COPY apps/consumer ./apps/consumer
 RUN mkdir -p ./apps/consumer/prisma
 COPY packages/database/prisma ./apps/consumer/prisma
 COPY packages/database/.env ./apps/consumer/prisma
-
-# Install Node.js and Prisma CLI (specific version)
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g prisma@5.17.0
 
 # Validate the Prisma schema
 RUN cd ./apps/consumer/prisma && prisma validate --schema=./schemapy.prisma

@@ -7,10 +7,11 @@ import base64
 
 def insert(
     client: weaviate.WeaviateClient, buffer: bytes, args: dict, task: dict, callback
-) -> None:
+) -> tuple[str, str]:
     # Fetch the appropriate extractor for the MIME type
     mime_type = args.get("mimeType")
     extractor = get_extractor(mime_type)
+    res: dict = {}
 
     # Check if the file already exists in the database
     if exists(client, extractor.file_type, args.get("fileId"), args.get("hash")):
@@ -27,20 +28,13 @@ def insert(
         chunks = chunkify_text(text)
         if len(chunks) > 1:
             args["chunks"] = chunks
-            insert_object_as_chunks(client, extractor.file_type, args)
+            res = insert_object_as_chunks(client, extractor.file_type, args)
         else:
-            insert_object(client, extractor.file_type, args)
+            res = insert_object(client, extractor.file_type, args)
 
         # Process each extracted image recursively
-        for _, image_buffer in enumerate(images):
-            return callback(
-                {
-                    "fileId": task.get("fileId"),
-                    "userId": task.get("userId"),
-                    "provider": task.get("provider"),
-                },
-                image_buffer,
-            )
+        for idx, image_buffer in enumerate(images):
+            res[f"img_{idx}"] = callback(task, image_buffer)
 
     # Process images
     elif extractor.file_type == "Image":
@@ -49,66 +43,16 @@ def insert(
         args["content"] = text
         args["imageData"] = base64.b64encode(buffer).decode("utf-8")
 
-        insert_object(client, "Image", args)
+        res = insert_object(client, "Image", args)
 
-    # Close the Weaviate client connection
+    # Close the Weaviate client connection and return the result
     client.close()
+    return res
 
 
-def insert_with_api(
-    client: weaviate.WeaviateClient,
-    buffer: bytes,
-    mime_type: str,
-    file_name: str,
-    callback,
-):
-    # Fetch the appropriate extractor for the MIME type
-    extractor = get_extractor(mime_type)
-
-    # Get the hash of the bytes
-    hash = hash_buffer(buffer)
-
-    # Generate args
-    args = {
-        "fileName": file_name,
-        "size": len(buffer),
-        "hash": hash,
-        "provider": "api",
-        "fileId": hash,
-    }
-
-    # Process documents
-    if extractor.file_type == "Document":
-        # Extract text and images
-        text, images = extractor.extract(buffer)
-        args["content"] = text
-
-        # Chunkify the text and insert into the database
-        chunks = chunkify_text(text)
-        if len(chunks) > 1:
-            args["chunks"] = chunks
-            insert_object_as_chunks(client, extractor.file_type, args)
-        else:
-            insert_object(client, extractor.file_type, args)
-
-        # Process each extracted image recursively
-        for _, image_buffer in enumerate(images):
-            return callback(image_buffer)
-
-    # Process images
-    elif extractor.file_type == "Image":
-        # Extract text from the image
-        text = extractor.extract(buffer)
-        args["content"] = text
-        args["imageData"] = base64.b64encode(buffer).decode("utf-8")
-
-        insert_object(client, "Image", args)
-
-    # Close the Weaviate client connection
-    client.close()
-
-
-def insert_object(client: weaviate.WeaviateClient, name: str, args: dict) -> None:
+def insert_object(
+    client: weaviate.WeaviateClient, name: str, args: dict
+) -> tuple[str, str]:
     """
     Inserts an object into a Weaviate collection.
 
@@ -132,6 +76,8 @@ def insert_object(client: weaviate.WeaviateClient, name: str, args: dict) -> Non
         object_uuid = collection.data.insert(args)
         print(f"Inserted object into '{name}' with UUID: {object_uuid}")
         print(f"Cost for embedding: ${cost}")
+        
+        return object_uuid, cost
 
     except Exception as e:
         print(f"Failed to insert data into collection '{name}': {e}")
@@ -140,7 +86,7 @@ def insert_object(client: weaviate.WeaviateClient, name: str, args: dict) -> Non
 
 def insert_object_as_chunks(
     client: weaviate.WeaviateClient, name: str, args: dict
-) -> None:
+) -> tuple[str, str]:
     """
     Inserts an object into a Weaviate collection.
 
@@ -168,6 +114,8 @@ def insert_object_as_chunks(
 
         print(f"Inserted chunked object into '{name}' with UUID: {object_uuid}")
         print(f"Cost for embedding: ${cost}")
+        
+        return object_uuid, cost
 
     except Exception as e:
         print(f"Failed to insert data into collection '{name}': {e}")
