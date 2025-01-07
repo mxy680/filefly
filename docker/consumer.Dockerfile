@@ -42,15 +42,12 @@ WORKDIR /app
 COPY apps/consumer/pyproject.toml apps/consumer/poetry.lock ./
 
 # Install Python dependencies
-RUN poetry install --no-root --no-dev
+RUN poetry install --no-root
 
 # Copy application source code
 COPY apps/consumer ./apps/consumer
 
-# Copy additional directories for tasks, providers, and database
-COPY packages/rabbitmq/consumer ./apps/consumer/app
-COPY packages/providers/python ./apps/consumer/app/providers/
-COPY packages/database/python ./apps/consumer/app/db/
+# Copy additional directory for processor
 COPY packages/processors/python ./apps/consumer/app/processors/
 
 # Copy Prisma schema and environment file

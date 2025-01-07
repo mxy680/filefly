@@ -39,10 +39,7 @@ RUN poetry install --no-root
 # Copy application source code
 COPY apps/api ./apps/api
 
-# Copy additional directories for tasks, providers, and database
-COPY packages/rabbitmq/consumer/tasks ./apps/api/app/tasks
-COPY packages/providers/python ./apps/api/app/providers/
-COPY packages/database/python ./apps/api/app/db/
+# Copy additional directory for processors
 COPY packages/processors/python ./apps/api/app/processors/
 
 # Copy Prisma schema and environment file

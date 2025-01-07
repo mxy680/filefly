@@ -1,16 +1,9 @@
+from app.processors.slideshow.processor import *
+
 map = {
-    "application/vnd.ms-powerpoint": None,
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation": None,
-    "application/vnd.openxmlformats-officedocument.presentationml.slideshow": None,
-    "application/vnd.oasis.opendocument.presentation": None,
-    "application/vnd.sun.xml.impress": None,
-    "application/vnd.stardivision.impress": None,
-    "application/vnd.lotus-freelance": None,
-    "application/vnd.apple.keynote": None,
-    "application/vnd.google-apps.presentation": None,
-    "application/vnd.kde.kpresenter": None,
-    "application/x-kpresenter": None,
-    "application/x-starimpress": None,
-    "application/x-impress": None,
-    "application/vnd.corel-presentations": None,
+    "application/vnd.ms-powerpoint": PPTXExtractor(),  # .ppt
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": PPTXExtractor(),  # .pptx
+    "application/vnd.openxmlformats-officedocument.presentationml.slideshow": PPTXExtractor(),  # .ppsx
+    "application/vnd.oasis.opendocument.presentation": ODPExtractor(),  # .odp
+    "application/vnd.apple.keynote": KeynoteExtractor(),  # .key
 }

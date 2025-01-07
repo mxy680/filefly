@@ -21,22 +21,14 @@ RUN pnpm install --frozen-lockfile
 # Copy server source code
 COPY apps/server ./apps/server
 
-# Copy additional directories for tasks, providers, and database
-COPY packages/rabbitmq/producer ./apps/server/src/producer
-COPY packages/database/ts/postgres ./apps/server/src/database
-COPY packages/providers/ts ./apps/server/src/providers
-
 # Copy Prisma schema
-COPY packages/prisma/prisma ./packages/database/prisma
+COPY packages/prisma/prisma ./apps/server/prisma
 
 # Set working directory to the server context
 WORKDIR /app/apps/server
 
-# Validate the Prisma schema
-RUN pnpx prisma validate --schema=../../packages/database/prisma/schemajs.prisma
-
 # Generate Prisma Client
-RUN pnpx prisma generate --schema=../../packages/database/prisma/schemajs.prisma
+RUN pnpx prisma generate --schema=./prisma/schemajs.prisma
 
 # Build the application
 RUN pnpm run build

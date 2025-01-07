@@ -40,6 +40,7 @@ psd-tools = "^1.10.4"
 openpyxl = "^3.1.5"
 xlrd = "^2.0.1"
 dbf = "^0.99.9"
+python-pptx = "^1.0.2"
 
 [build-system]
 requires = ["poetry-core"]
