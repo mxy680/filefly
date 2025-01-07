@@ -47,10 +47,16 @@ RUN poetry install --no-root --no-dev
 # Copy application source code
 COPY apps/consumer ./apps/consumer
 
+# Copy additional directories for tasks, providers, and database
+COPY packages/rabbitmq/consumer ./apps/consumer/app
+COPY packages/providers/python ./apps/consumer/app/providers/
+COPY packages/database/python ./apps/consumer/app/db/
+COPY packages/processors/python ./apps/consumer/app/processors/
+
 # Copy Prisma schema and environment file
 RUN mkdir -p ./apps/consumer/prisma
-COPY packages/database/prisma ./apps/consumer/prisma
-COPY packages/database/.env ./apps/consumer/prisma
+COPY packages/prisma/prisma ./apps/consumer/prisma
+COPY packages/prisma/.env ./apps/consumer/prisma
 
 # Validate the Prisma schema
 RUN cd ./apps/consumer/prisma && prisma validate --schema=./schemapy.prisma
@@ -62,4 +68,4 @@ RUN cd ./apps/consumer/prisma && prisma generate --schema=./schemapy.prisma
 EXPOSE 8000
 
 # Run the RabbitMQ Consumer application
-CMD ["sh", "-c", "poetry run python apps/consumer/bootstrap/init.py && poetry run uvicorn apps.consumer.app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "poetry run python apps/consumer/app/db/vector/bootstrap.py && poetry run uvicorn apps.consumer.app.main:app --host 0.0.0.0 --port 8000"]

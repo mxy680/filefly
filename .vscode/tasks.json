@@ -21,7 +21,7 @@
         {
             "label": "Test API",
             "type": "shell",
-            "command": "cd apps/api/app || exit && poetry run python test.py",
+            "command": "cd apps/api/test || exit && poetry run python test.py",
         }
     ]
   }

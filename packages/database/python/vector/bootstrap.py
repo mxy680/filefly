@@ -1,6 +1,6 @@
 import weaviate
 import os
-from bootstrap.weaviate_db.schemas import schemas
+from app.db.vector.schemas import schemas
 from dotenv import load_dotenv
 
 def initialize_weaviate():
@@ -36,3 +36,6 @@ def initialize_weaviate():
         print(f"Failed to create collection: {e}")
 
     client.close()
+
+if __name__ == "__main__":
+    initialize_weaviate()

@@ -31,16 +31,4 @@ if ! rabbitmqadmin declare binding source=processing-exchange destination=deleti
   exit 1
 fi
 
-# Declare the API vectorization queue
-if ! rabbitmqadmin declare queue name=api_vectorization_queue durable=true; then
-  echo "Failed to declare api_vectorization_queue"
-  exit 1
-fi
-
-# Bind the API vectorization queue to the exchange with the routing key
-if ! rabbitmqadmin declare binding source=processing-exchange destination=api_vectorization_queue routing_key=api-vectorization-task; then
-  echo "Failed to bind api_vectorization_queue"
-  exit 1
-fi
-
 echo "RabbitMQ setup complete: Exchange and Queues created!"

@@ -77,7 +77,7 @@ def insert_object(
         print(f"Inserted object into '{name}' with UUID: {object_uuid}")
         print(f"Cost for embedding: ${cost}")
         
-        return object_uuid, cost
+        return str(object_uuid), str(cost)
 
     except Exception as e:
         print(f"Failed to insert data into collection '{name}': {e}")
@@ -115,7 +115,7 @@ def insert_object_as_chunks(
         print(f"Inserted chunked object into '{name}' with UUID: {object_uuid}")
         print(f"Cost for embedding: ${cost}")
         
-        return object_uuid, cost
+        return str(object_uuid), str(cost)
 
     except Exception as e:
         print(f"Failed to insert data into collection '{name}': {e}")
