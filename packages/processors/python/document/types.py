@@ -1,4 +1,4 @@
-from app.processors.document.document import *
+from app.processors.document.processor import *
 
 map = {
     "text/plain": PlainTextExtractor(),
@@ -17,13 +17,10 @@ map = {
     "application/xhtml+xml": HTMLExtractor(),
     "text/xml": XMLExtractor(),
     "application/xml": XMLExtractor(),
-    "application/json": None,
-    "application/vnd.ms-works": None,
-    "application/vnd.apple.pages": None,
-    "application/epub+zip": None,
-    "application/vnd.lotus-1-2-3": None,
-    "text/x-tex" "application/x-tex": None,
-    "application/x-latex": None,
-    "application/x-troff-ms": None,
-    "application/vnd.wap.xhtml+xml": None,
+    "application/json": JSONExtractor(),
+    "application/vnd.apple.pages": ApplePagesExtractor(),
+    "application/epub+zip": EPUBExtractor(),
+    "text/x-tex": TeXExtractor(),
+    "application/x-tex": TeXExtractor(),
+    "application/x-latex": TeXExtractor(),
 }

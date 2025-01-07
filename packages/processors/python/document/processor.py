@@ -18,6 +18,7 @@ import hashlib
 from xml.etree import ElementTree as ET
 import requests
 from bs4 import BeautifulSoup
+import json
 
 
 class DocumentExtractor(ABC):
@@ -319,3 +320,69 @@ class HTMLExtractor(DocumentExtractor):
                         print(f"Failed to download image from {img_src}: {e}")
 
         return text_content, images
+
+
+class JSONExtractor(DocumentExtractor):
+    """
+    Extracts content from JSON files.
+    """
+
+    def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
+        try:
+            data = json.loads(buffer.decode("utf-8"))
+            text = json.dumps(data, indent=2)  # Pretty print JSON
+            return text, []
+        except Exception as e:
+            raise RuntimeError(f"Failed to extract from JSON file: {e}")
+
+
+class ApplePagesExtractor(DocumentExtractor):
+    """
+    Extracts content from Apple Pages files.
+    """
+
+    def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
+        try:
+            with ZipFile(io.BytesIO(buffer)) as zip_file:
+                content_xml = zip_file.read("index.apxl").decode("utf-8")
+                root = ET.fromstring(content_xml)
+                text_content = [elem.text for elem in root.iter() if elem.text]
+                return "\n".join(text_content), []
+        except Exception as e:
+            raise RuntimeError(f"Failed to extract from Apple Pages file: {e}")
+
+
+class EPUBExtractor(DocumentExtractor):
+    """
+    Extracts text and images from EPUB files.
+    """
+
+    def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
+        try:
+            with ZipFile(io.BytesIO(buffer)) as epub:
+                text_content = []
+                images = []
+                for file_name in epub.namelist():
+                    if file_name.endswith(".xhtml"):
+                        content = epub.read(file_name).decode("utf-8")
+                        soup = BeautifulSoup(content, "html.parser")
+                        text_content.append(soup.get_text())
+                    elif file_name.endswith((".jpg", ".jpeg", ".png", ".gif")):
+                        images.append(epub.read(file_name))
+                return "\n".join(text_content), images
+        except Exception as e:
+            raise RuntimeError(f"Failed to extract from EPUB file: {e}")
+
+
+class TeXExtractor(DocumentExtractor):
+    """
+    Extracts content from TeX/LaTeX files.
+    """
+
+    def extract(self, buffer: bytes) -> Tuple[str, List[bytes]]:
+        text = buffer.decode("utf-8", errors="replace")
+        text = re.sub(
+            r"\\[a-zA-Z]+|{.*?}|%.*?$", "", text, flags=re.MULTILINE
+        )  # Remove commands and comments
+        return text.strip(), []
+

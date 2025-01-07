@@ -27,7 +27,7 @@ async def index_file(
 
         encoded_content = base64.b64encode(file_content).decode("utf-8")
 
-        uuid, cost = await handle_vectorization_task(
+        uuid, cost, message = await handle_vectorization_task(
             {
                 "fileName": file.filename,
                 "buffer": encoded_content,
@@ -39,7 +39,7 @@ async def index_file(
         return IndexFileResponse(
             fileId=uuid,
             cost=cost,
-            message="File has been indexed successfully",
+            message=message,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to index file: {e}")

@@ -7,11 +7,14 @@ import base64
 
 def insert(
     client: weaviate.WeaviateClient, buffer: bytes, args: dict, task: dict, callback
-) -> tuple[str, str]:
+) -> tuple[str, str, str]:
     # Fetch the appropriate extractor for the MIME type
     mime_type = args.get("mimeType")
     extractor = get_extractor(mime_type)
     res: dict = {}
+
+    if extractor is None:
+        return None, None, f"Mime Type '{mime_type}' not supported."
 
     # Check if the file already exists in the database
     if exists(client, extractor.file_type, args.get("fileId"), args.get("hash")):
@@ -76,8 +79,8 @@ def insert_object(
         object_uuid = collection.data.insert(args)
         print(f"Inserted object into '{name}' with UUID: {object_uuid}")
         print(f"Cost for embedding: ${cost}")
-        
-        return str(object_uuid), str(cost)
+
+        return str(object_uuid), str(cost), "File indexed successfully."
 
     except Exception as e:
         print(f"Failed to insert data into collection '{name}': {e}")
@@ -114,8 +117,8 @@ def insert_object_as_chunks(
 
         print(f"Inserted chunked object into '{name}' with UUID: {object_uuid}")
         print(f"Cost for embedding: ${cost}")
-        
-        return str(object_uuid), str(cost)
+
+        return str(object_uuid), str(cost), "File indexed successfully."
 
     except Exception as e:
         print(f"Failed to insert data into collection '{name}': {e}")

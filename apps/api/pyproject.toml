@@ -35,6 +35,11 @@ prisma = "^0.15.0"
 pydantic = "^2.10.4"
 python-multipart = "^0.0.20"
 kombu = "^5.4.2"
+pillow-heif = "^0.21.0"
+psd-tools = "^1.10.4"
+openpyxl = "^3.1.5"
+xlrd = "^2.0.1"
+dbf = "^0.99.9"
 
 [build-system]
 requires = ["poetry-core"]
