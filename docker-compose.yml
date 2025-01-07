@@ -19,22 +19,22 @@ services:
     networks:
       - shared-network
 
-  # api:
-  #   build:
-  #     context: .
-  #     dockerfile: ./docker/api.Dockerfile
-  #   ports:
-  #     - "10000:10000"
-  #   depends_on:
-  #     - consumer
-  #     - server
-  #   env_file:
-  #     - ./apps/api/.env
-  #   environment:
-  #     NODE_ENV: development
-  #     PYTHONUNBUFFERED: 1
-  #   networks:
-  #     - shared-network
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/api.Dockerfile
+    ports:
+      - "10000:10000"
+    depends_on:
+      - consumer
+      - server
+    env_file:
+      - ./apps/api/.env
+    environment:
+      NODE_ENV: development
+      PYTHONUNBUFFERED: 1
+    networks:
+      - shared-network
 
   server:
     build:

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from app.db.client import db
+from app.db.postgres.client import db
 
 # Routing
 from app.routes.index.route import router as index_router

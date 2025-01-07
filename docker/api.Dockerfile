@@ -11,6 +11,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     gnupg \
     curl \
+    libreoffice \
+    libreoffice-common \
+    python3-uno \
+    ghostscript \
+    poppler-utils \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g prisma@5.17.0 \
@@ -29,15 +34,21 @@ WORKDIR /app
 COPY apps/api/pyproject.toml apps/api/poetry.lock ./
 
 # Install Python dependencies
-RUN poetry install --no-root --no-dev
+RUN poetry install --no-root
 
 # Copy application source code
 COPY apps/api ./apps/api
 
+# Copy additional directories for tasks, providers, and database
+COPY packages/rabbitmq/consumer/tasks ./apps/api/app/tasks
+COPY packages/providers/python ./apps/api/app/providers/
+COPY packages/database/python ./apps/api/app/db/
+COPY packages/processors/python ./apps/api/app/processors/
+
 # Copy Prisma schema and environment file
 RUN mkdir -p ./apps/api/prisma
-COPY packages/database/prisma ./apps/api/prisma
-COPY packages/database/.env ./apps/api/prisma
+COPY packages/prisma/prisma ./apps/api/prisma
+COPY packages/prisma/.env ./apps/api/prisma
 
 # Print the dir tree of prisma
 RUN ls -R ./apps/api/prisma
