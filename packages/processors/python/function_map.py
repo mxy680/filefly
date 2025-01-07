@@ -1,38 +1,19 @@
-from app.processors.document.document import *
-from app.processors.image.image import *
+from app.processors.image.types import map as image_map
+from app.processors.document.types import map as document_map
+from app.processors.code.types import map as code_map
+from app.processors.audio.types import map as audio_map
+from app.processors.video.types import map as video_map
+from app.processors.spreadsheet.types import map as spreadsheet_map
+from app.processors.slideshow.types import map as slideshow_map
 
 mime_processing_map = {
-    # --------------------------------- Document ---------------------------------
-    "text/plain": PlainTextExtractor(),
-    "application/plain": PlainTextExtractor(),
-    "application/msword": LegacyWordExtractor(),
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": WordExtractor(),
-    "application/pdf": PDFExtractor(),
-    "application/rtf": RTFExtractor(),
-    "text/rtf": RTFExtractor(),
-    "application/vnd.oasis.opendocument.text": ODTExtractor(),
-    "application/vnd.oasis.opendocument.text-template": ODTExtractor(),
-    "text/markdown": MarkdownExtractor(),
-    "text/x-markdown": MarkdownExtractor(),
-    "text/html": HTMLExtractor(),
-    "application/html": HTMLExtractor(),
-    "application/xhtml+xml": HTMLExtractor(),
-    "text/xml": XMLExtractor(),
-    "application/xml": XMLExtractor(),
-    
-    # --------------------------------- Image -------------------------------------
-    "image/png": GeneralImageExtractor(),
-    "image/jpeg": GeneralImageExtractor(),
-    "image/jpg": GeneralImageExtractor(),
-    "image/vnd.microsoft.icon": AdvancedImageExtractor(),
-    "image/x-icon": AdvancedImageExtractor(),
-    "image/webp": AdvancedImageExtractor(),
-    "image/tiff": AdvancedImageExtractor(),
-    "image/x-tiff": AdvancedImageExtractor(),
-    "image/bmp": AdvancedImageExtractor(),
-    "image/x-bmp": AdvancedImageExtractor(),
-    "image/gif": GraphicsInterchangeFormatExtractor(),
-    "image/svg+xml": ScalableVectorGraphicsExtractor(),
+    **image_map,
+    **document_map,
+    **code_map,
+    **audio_map,
+    **video_map,
+    **spreadsheet_map,
+    **slideshow_map,
 }
 
 
@@ -46,5 +27,5 @@ def get_extractor(mime_type: str):
     extractor = mime_processing_map.get(mime_type)
     if not extractor:
         raise ValueError("MIME type not supported")
-    
+
     return extractor

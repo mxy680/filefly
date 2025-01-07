@@ -9,12 +9,8 @@ router = APIRouter(prefix="/index", tags=["Indexing"])
 # Models
 class IndexFileResponse(BaseModel):
     fileId: str
+    cost: float
     message: str
-
-
-@router.get("/")
-async def index() -> str:
-    return "Indexing service is up"
 
 
 @router.post("/", response_model=IndexFileResponse)
@@ -41,7 +37,9 @@ async def index_file(
         )
 
         return IndexFileResponse(
-            fileId=uuid, message=f"File indexed successfully. Cost: {cost}"
+            fileId=uuid,
+            cost=cost,
+            message="File has been indexed successfully",
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to index file: {e}")

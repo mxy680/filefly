@@ -107,7 +107,7 @@ schemas = [
         ],
     },
     {
-        "name": "Data",
+        "name": "Spreadsheet",
         "vectorizer": Configure.NamedVectors.text2vec_openai(
             name="data",
             model="text-embedding-3-small",
