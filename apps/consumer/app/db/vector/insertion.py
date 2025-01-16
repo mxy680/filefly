@@ -1,6 +1,5 @@
 import weaviate
-from app.db.vector.methods import embed_text_chunks, calculate_cost
-from app.processors.function_map import get_extractor
+from processors.extractor import get_extractor
 from app.db.vector.methods import exists, chunkify_text, hash_buffer
 import base64
 import uuid

@@ -1,4 +1,4 @@
-from app.processors.function_map import get_extractor
+from processors.extractor import get_extractor
 from weaviate.classes.query import Filter
 import weaviate
 

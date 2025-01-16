@@ -1,12 +1,12 @@
 # Use a slim Python image
-FROM python:3.12-slim
+FROM python:3.12
 
 # Suppress warnings globally for the container
 ENV PYTHONWARNINGS=ignore
 ENV PYTHONPATH=/app/apps/api
 ENV PRISMA_PY_DEBUG_GENERATOR=1
 
-# Install system dependencies
+# Install system dependencies with space cleanup
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     gnupg \
@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g prisma@5.17.0 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/*
 
 # Install Poetry
 RUN pip install --no-cache-dir poetry
@@ -33,22 +34,31 @@ WORKDIR /app
 # Copy Poetry configuration files
 COPY apps/api/pyproject.toml apps/api/poetry.lock ./
 
+# Copy the processors package into the Docker image and build it and install it
+COPY packages/processors /packages/processors
+RUN cd /packages/processors && poetry build
+RUN poetry add /packages/processors/dist/processors-0.1.0-py3-none-any.whl
+
+# Copy the postgres-py package into the Docker image and build it and install it
+COPY packages/postgres-py /packages/postgres-py
+RUN cd /packages/postgres-py && poetry build
+RUN poetry add /packages/postgres-py/dist/postgres_py-0.1.0-py3-none-any.whl
+
+# Copy the weaviate-py package into the Docker image and build it and install it
+COPY packages/weaviate-py /packages/weaviate-py
+RUN cd /packages/weaviate-py && poetry build
+RUN poetry add /packages/weaviate-py/dist/weaviate_py-0.1.0-py3-none-any.whl
+
 # Install Python dependencies
 RUN poetry install --no-root
 
 # Copy application source code
 COPY apps/api ./apps/api
 
-# Copy additional directory for processors
-COPY packages/processors/python ./apps/api/app/processors/
-
 # Copy Prisma schema and environment file
 RUN mkdir -p ./apps/api/prisma
 COPY packages/prisma/prisma ./apps/api/prisma
 COPY packages/prisma/.env ./apps/api/prisma
-
-# Print the dir tree of prisma
-RUN ls -R ./apps/api/prisma
 
 # Validate the Prisma schema
 RUN cd ./apps/api/prisma && prisma validate --schema=./schemapy.prisma

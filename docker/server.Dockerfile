@@ -1,55 +1,46 @@
-# -------------------------
-# 1) Builder Stage
-# -------------------------
+# Base image
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Install OpenSSL
-RUN apk add --no-cache openssl && ln -s /usr/lib/libssl.so.1.1 /usr/lib/libssl.so || true
-
-# Copy workspace and server-specific package files
-COPY pnpm-workspace.yaml ./
-COPY apps/server/package.json apps/server/pnpm-lock.yaml ./
-
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Install dependencies for the server
+# Copy workspace files
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+
+# Copy server-specific files
+COPY apps/server/package.json apps/server/ ./
+
+# Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy server source code
+# Copy source files
 COPY apps/server ./apps/server
+COPY packages/weaviate-ts ./packages/weaviate-ts
+COPY packages/postgres-ts ./packages/postgres-ts
+COPY packages/prisma ./packages/prisma
 
-# Copy Prisma schema
-COPY packages/prisma/prisma ./apps/server/prisma
+# Generate Prisma Client using the correct schema
+RUN pnpx prisma generate --schema=./packages/prisma/prisma/schemajs.prisma
 
-# Set working directory to the server context
-WORKDIR /app/apps/server
+# Build the workspace
+RUN pnpm --filter=weaviate-ts build
+RUN pnpm --filter=postgres-ts build
+RUN pnpm --filter=server build
 
-# Generate Prisma Client
-RUN pnpx prisma generate --schema=./prisma/schemajs.prisma
-
-# Build the application
-RUN pnpm run build
-
-# -------------------------
-# 2) Runner (Production) Stage
-# -------------------------
+# Runner stage
 FROM node:18-alpine AS runner
 
 WORKDIR /app
 
-# Install OpenSSL
-RUN apk add --no-cache openssl && ln -s /usr/lib/libssl.so.1.1 /usr/lib/libssl.so || true
-
-# Copy compiled dist, dependencies, and package.json
+# Copy compiled server app and dependencies
 COPY --from=builder /app/apps/server/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/server/package.json ./
 
-# Expose application port
+# Expose the application port
 EXPOSE 4000
 
-# Start the application
 CMD ["node", "dist/main.js"]

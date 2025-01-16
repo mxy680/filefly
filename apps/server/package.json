@@ -23,7 +23,7 @@
     "@nestjs/microservices": "^10.4.7",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
-    "@prisma/client": "^5.21.1",
+    "@prisma/client": "^5.22.0",
     "adm-zip": "^0.5.16",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.4",
@@ -38,12 +38,13 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "prisma-client": "^0.0.0",
+    "postgres-utils": "workspace:*",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.5",
     "turbo": "^2.1.3",
     "uuid": "^11.0.2",
+    "weaviate-utils": "workspace:*",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

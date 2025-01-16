@@ -41,14 +41,16 @@ WORKDIR /app
 # Copy Poetry configuration files
 COPY apps/consumer/pyproject.toml apps/consumer/poetry.lock ./
 
+# Copy the processors package into the Docker image and build it and install it
+COPY packages/processors /packages/processors
+RUN cd /packages/processors && poetry build
+RUN poetry add /packages/processors/dist/processors-0.1.0-py3-none-any.whl
+
 # Install Python dependencies
 RUN poetry install --no-root
 
 # Copy application source code
 COPY apps/consumer ./apps/consumer
-
-# Copy additional directory for processor
-COPY packages/processors/python ./apps/consumer/app/processors/
 
 # Copy Prisma schema and environment file
 RUN mkdir -p ./apps/consumer/prisma

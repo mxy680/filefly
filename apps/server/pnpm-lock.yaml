@@ -42,7 +42,7 @@ importers:
         specifier: ^10.0.0
         version: 10.4.15(@nestjs/common@10.4.15(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.4.15)
       '@prisma/client':
-        specifier: ^5.21.1
+        specifier: ^5.22.0
         version: 5.22.0(prisma@6.1.0)
       adm-zip:
         specifier: ^0.5.16
@@ -86,6 +86,9 @@ importers:
       passport-local:
         specifier: ^1.0.0
         version: 1.0.0
+      postgres-utils:
+        specifier: workspace:*
+        version: link:../../packages/postgres-ts
       prisma-client:
         specifier: ^0.0.0
         version: 0.0.0
@@ -104,6 +107,9 @@ importers:
       uuid:
         specifier: ^11.0.2
         version: 11.0.3
+      weaviate-utils:
+        specifier: workspace:*
+        version: link:../../packages/weaviate-ts
       xml2js:
         specifier: ^0.6.2
         version: 0.6.2

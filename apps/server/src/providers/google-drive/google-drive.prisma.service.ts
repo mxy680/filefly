@@ -1,4 +1,3 @@
-// src/providers/google-drive/google-drive.prisma.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDriveFile } from './google-drive.types';

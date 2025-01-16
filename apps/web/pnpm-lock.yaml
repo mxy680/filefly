@@ -33,9 +33,6 @@ importers:
       '@next/eslint-plugin-next':
         specifier: ^14.1.1
         version: 14.2.21
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../../packages/eslint-config
       '@types/jsonwebtoken':
         specifier: ^9.0.7
         version: 9.0.7
