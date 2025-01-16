@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { GoogleDriveFile } from './google-drive.types';
+import { fileExists as googleFileExists } from 'postgres-utils';
 
 @Injectable()
 export class GoogleDrivePrismaService {
     constructor(private readonly prisma: PrismaService) { }
 
     async fileExists(userId: number, fileId: string): Promise<boolean> {
-        const file = await this.prisma.googleDriveFile.findFirst({
-            where: { userId, id: fileId }
-        });
-
-        return !!file;
+        return await googleFileExists(this.prisma, userId, fileId);
     }
 
     async createFile(userId: number, file: GoogleDriveFile) {

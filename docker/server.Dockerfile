@@ -1,46 +1,53 @@
-# Base image
+# -------------------------
+# 1) Builder Stage
+# -------------------------
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Copy workspace and server-specific package files
+COPY pnpm-workspace.yaml ./
+COPY apps/server/package.json apps/server/pnpm-lock.yaml ./
+
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy workspace files
-COPY pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
-
-# Copy server-specific files
-COPY apps/server/package.json apps/server/ ./
-
-# Install dependencies
+# Install dependencies for the server
 RUN pnpm install --frozen-lockfile
 
-# Copy source files
+# Copy server source code
 COPY apps/server ./apps/server
-COPY packages/weaviate-ts ./packages/weaviate-ts
+
+# Copy Prisma schema
+COPY packages/prisma/prisma ./packages/prisma/prisma
 COPY packages/postgres-ts ./packages/postgres-ts
-COPY packages/prisma ./packages/prisma
+COPY packages/weaviate-ts ./packages/weaviate-ts
 
-# Generate Prisma Client using the correct schema
-RUN pnpx prisma generate --schema=./packages/prisma/prisma/schemajs.prisma
+# Set working directory to the server context
+WORKDIR /app/apps/server
 
-# Build the workspace
-RUN pnpm --filter=weaviate-ts build
-RUN pnpm --filter=postgres-ts build
-RUN pnpm --filter=server build
-
-# Runner stage
-FROM node:18-alpine AS runner
+# Generate Prisma Client
+RUN pnpx prisma generate --schema=../../packages/prisma/prisma/schemajs.prisma
 
 WORKDIR /app
 
-# Copy compiled server app and dependencies
+# Build the application
+RUN pnpm --filter=weaviate-ts build
+RUN pnpm --filter=postgres-ts build
+RUN pnpm --filter=postgres-utils build
+
+# -------------------------
+# 2) Runner (Production) Stage
+# -------------------------
+FROM node:18-alpine AS runner
+
+# Copy compiled dist, dependencies, and package.json
 COPY --from=builder /app/apps/server/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/server/package.json ./
 
-# Expose the application port
+# Expose application port
 EXPOSE 4000
 
+# Start the application
 CMD ["node", "dist/main.js"]
