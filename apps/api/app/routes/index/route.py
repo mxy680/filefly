@@ -5,17 +5,8 @@ import base64
 router = APIRouter(prefix="/index", tags=["Indexing"])
 
 
-# Models
-class IndexFileResponse(BaseModel):
-    fileId: str
-    cost: float
-    message: str
-
-
-@router.post("/", response_model=IndexFileResponse)
-async def index_file(
-    apiKey: str = Form(...), file: UploadFile = File(...)
-) -> IndexFileResponse:
+@router.post("/")
+async def index_file(apiKey: str = Form(...), file: UploadFile = File(...)):
     if not file:
         raise HTTPException(status_code=400, detail="File not uploaded.")
 

@@ -1,7 +1,6 @@
 import weaviate
 import os
-from app.db.vector.schemas import schemas
-from dotenv import load_dotenv
+from schemas import schemas
 
 def initialize_weaviate():
     """

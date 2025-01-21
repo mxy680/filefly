@@ -42,12 +42,17 @@ RUN poetry add /packages/processors/dist/processors-0.1.0-py3-none-any.whl
 # Copy the postgres-py package into the Docker image and build it and install it
 COPY packages/postgres-py /packages/postgres-py
 RUN cd /packages/postgres-py && poetry build
-RUN poetry add /packages/postgres-py/dist/postgres_py-0.1.0-py3-none-any.whl
+RUN poetry add /packages/postgres-py/dist/postgres_utils-0.1.0-py3-none-any.whl
 
 # Copy the weaviate-py package into the Docker image and build it and install it
 COPY packages/weaviate-py /packages/weaviate-py
 RUN cd /packages/weaviate-py && poetry build
-RUN poetry add /packages/weaviate-py/dist/weaviate_py-0.1.0-py3-none-any.whl
+RUN poetry add /packages/weaviate-py/dist/weaviate_utils-0.1.0-py3-none-any.whl
+
+# Copy the providers package into the Docker image and build it and install it
+COPY packages/providers /packages/providers
+RUN cd /packages/providers && poetry build
+RUN poetry add /packages/providers/dist/providers-0.1.0-py3-none-any.whl
 
 # Install Python dependencies
 RUN poetry install --no-root

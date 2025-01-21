@@ -19,6 +19,9 @@ requests = "^2.32.3"
 prisma = "^0.15.0"
 pydantic = "^2.10.4"
 python-multipart = "^0.0.20"
+postgres-utils = {path = "../../packages/postgres-py/dist/postgres_utils-0.1.0-py3-none-any.whl"}
+providers = {path = "../../packages/providers/dist/providers-0.1.0-py3-none-any.whl"}
+weaviate-utils = {path = "../../packages/weaviate-py/dist/weaviate_utils-0.1.0-py3-none-any.whl"}
 
 [build-system]
 requires = ["poetry-core"]

@@ -5,7 +5,6 @@ import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
 
 import { PrismaService } from 'src/database/prisma.service';
-import { GoogleDrivePrismaService } from './google-drive.prisma.service';
 
 import { GoogleDriveFile } from './google-drive.types'; // For Prisma Schema
 import { ProducerService } from 'src/producer/producer.service';
@@ -13,7 +12,7 @@ import { ProducerService } from 'src/producer/producer.service';
 @Injectable()
 export class GoogleDriveService {
     constructor(
-        private readonly prismaFileService: GoogleDrivePrismaService,
+        private readonly prisma: PrismaService,
         private readonly producerService: ProducerService,
     ) { }
 
@@ -25,11 +24,11 @@ export class GoogleDriveService {
     }
 
     async upload(file: GoogleDriveFile, userId: number): Promise<void> {
-        const fileHashExists = await this.prismaFileService.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
+        const fileHashExists = await this.prisma.fileWithHashExists(userId, file?.sha256Checksum, 'sha256');
         if (!fileHashExists) {
             // Try to create the file 
             try {
-                await this.prismaFileService.createFile(userId, file as GoogleDriveFile);
+                await this.prisma.createFile(userId, file as GoogleDriveFile);
             } catch (error) {
                 if (error.code === 'P2002') {
                     // File already exists, assume deduplication
@@ -45,8 +44,8 @@ export class GoogleDriveService {
 
     async delete(file: GoogleDriveFile, userId: number): Promise<void> {
         // Check if the file exists 
-        const fileExists = await this.prismaFileService.fileExists(userId, file.id);
-        if (!fileExists) {
+        const exists = await this.prisma.fileExists(userId, file.id);
+        if (!exists) {
             return;
         }
 
@@ -134,7 +133,7 @@ export class GoogleDriveService {
             }
 
             // Upsert the webhook in the database
-            await this.prismaFileService.upsertWebhook(userId, channelId, resourceId, pageToken, accessToken, expiration);
+            await this.prisma.upsertWebhook(userId, channelId, resourceId, pageToken, accessToken, expiration);
 
         } catch (error) {
             console.error('Error starting Google Drive watch:', error);

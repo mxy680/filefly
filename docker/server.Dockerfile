@@ -20,8 +20,6 @@ COPY apps/server ./apps/server
 
 # Copy Prisma schema
 COPY packages/prisma/prisma ./packages/prisma/prisma
-COPY packages/postgres-ts ./packages/postgres-ts
-COPY packages/weaviate-ts ./packages/weaviate-ts
 
 # Set working directory to the server context
 WORKDIR /app/apps/server
@@ -29,12 +27,8 @@ WORKDIR /app/apps/server
 # Generate Prisma Client
 RUN pnpx prisma generate --schema=../../packages/prisma/prisma/schemajs.prisma
 
-WORKDIR /app
-
 # Build the application
-RUN pnpm --filter=weaviate-ts build
-RUN pnpm --filter=postgres-ts build
-RUN pnpm --filter=postgres-utils build
+RUN pnpm build
 
 # -------------------------
 # 2) Runner (Production) Stage

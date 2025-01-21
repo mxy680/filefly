@@ -86,9 +86,6 @@ importers:
       passport-local:
         specifier: ^1.0.0
         version: 1.0.0
-      postgres-utils:
-        specifier: workspace:*
-        version: link:../../packages/postgres-ts
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -104,9 +101,6 @@ importers:
       uuid:
         specifier: ^11.0.2
         version: 11.0.3
-      weaviate-utils:
-        specifier: workspace:*
-        version: link:../../packages/weaviate-ts
       xml2js:
         specifier: ^0.6.2
         version: 0.6.2

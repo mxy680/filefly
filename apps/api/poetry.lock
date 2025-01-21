@@ -1049,6 +1049,23 @@ test = ["hypothesis (>=6.46.1)", "pytest (>=7.3.2)", "pytest-xdist (>=2.2.0)"]
 xml = ["lxml (>=4.9.2)"]
 
 [[package]]
+name = "postgres_utils"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = ">=3.11,<3.14"
+files = [
+    {file = "postgres_utils-0.1.0-py3-none-any.whl", hash = "sha256:9695f44008b93caaa62f82f3e803724eb7108e2c2a69c2b5746b8c7aaae2f817"},
+]
+
+[package.dependencies]
+prisma = ">=0.15.0,<0.16.0"
+
+[package.source]
+type = "file"
+url = "../../packages/postgres-py/dist/postgres_utils-0.1.0-py3-none-any.whl"
+
+[[package]]
 name = "prisma"
 version = "0.15.0"
 description = "Prisma Client Python is an auto-generated and fully type-safe database client"
@@ -1109,6 +1126,20 @@ files = [
     {file = "protobuf-5.29.3-py3-none-any.whl", hash = "sha256:0a18ed4a24198528f2333802eb075e59dea9d679ab7a6c5efb017a59004d849f"},
     {file = "protobuf-5.29.3.tar.gz", hash = "sha256:5da0f41edaf117bde316404bad1a486cb4ededf8e4a54891296f648e8e076620"},
 ]
+
+[[package]]
+name = "providers"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = ">=3.11,<3.14"
+files = [
+    {file = "providers-0.1.0-py3-none-any.whl", hash = "sha256:bb62d213c7218456b1056fa5be97eca1c8a553be51d52747111f179505b21850"},
+]
+
+[package.source]
+type = "file"
+url = "../../packages/providers/dist/providers-0.1.0-py3-none-any.whl"
 
 [[package]]
 name = "pyasn1"
@@ -1570,7 +1601,24 @@ httpx = ">=0.26.0,<0.29.0"
 pydantic = ">=2.8.0,<3.0.0"
 validators = "0.34.0"
 
+[[package]]
+name = "weaviate_utils"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = ">=3.11,<3.14"
+files = [
+    {file = "weaviate_utils-0.1.0-py3-none-any.whl", hash = "sha256:57669cd16ebbed6a43797463dca8d55500b6ac91658d04ebcc2951ca7ef9ff56"},
+]
+
+[package.dependencies]
+weaviate-client = ">=4.10.4,<5.0.0"
+
+[package.source]
+type = "file"
+url = "../../packages/weaviate-py/dist/weaviate_utils-0.1.0-py3-none-any.whl"
+
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.14"
-content-hash = "0736a91c1b7a136a2c498aa1d16e554f19b5001357f6e58d3e939befe1850892"
+content-hash = "131765cd908bc75ec7a506a1e168bd593465c341be3b57275a6e69bb13371388"

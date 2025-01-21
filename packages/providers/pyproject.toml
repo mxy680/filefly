@@ -1,14 +1,12 @@
 [tool.poetry]
-name = "postgres_utils"
+name = "providers"
 version = "0.1.0"
 description = ""
 authors = ["Mark Shteyn <markshteyn1@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "postgres_utils" }]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.14"
-prisma = "^0.15.0"
 
 
 [build-system]

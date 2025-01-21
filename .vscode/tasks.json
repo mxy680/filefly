@@ -22,6 +22,11 @@
             "label": "Test API",
             "type": "shell",
             "command": "cd apps/api/test || exit && poetry run python test.py",
+        },
+        {
+            "label": "Build Packages and Install",
+            "type": "shell",
+            "command": "cd packages/providers && poetry build && cd ../postgres-py && poetry build && cd ../weaviate-py && poetry build && cd ../providers && poetry build && cd ../../apps/api && poetry add ../../packages/providers/dist/providers-0.1.0-py3-none-any.whl && poetry add ../../packages/postgres-py/dist/postgres_utils-0.1.0-py3-none-any.whl && poetry add ../../packages/weaviate-py/dist/weaviate_utils-0.1.0-py3-none-any.whl && poetry add ../../packages/providers/dist/providers-0.1.0-py3-none-any.whl",
         }
     ]
   }
